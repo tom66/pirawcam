@@ -56,6 +56,7 @@ int rawcam_get_buffer_size_recommended();
 int rawcam_get_buffer_num_recommended();
 void rawcam_set_zero_copy(int zero_copy);
 int rawcam_get_zero_copy();
+void rawcam_flush(void);
 
 bool rawcam_format_commit();
 void rawcam_debug();

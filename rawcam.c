@@ -389,3 +389,7 @@ bool rawcam_start(void) {
 void rawcam_free(void) {
 	/* FIXME */
 }
+
+void rawcam_flush(void) {
+	mmal_port_flush(r.output);
+}
