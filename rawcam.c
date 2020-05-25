@@ -72,7 +72,7 @@ enum teardown { NONE=0, PORT, POOL, C1, C2 };
 			return false;	      \
 		}} while(0)
 
-#define RAWCAM_VERSION 	"v0.0.8"
+#define RAWCAM_VERSION 	"v0.0.9"
 
 int mmal_ret_status = 0;
 int fi_counter = 0;
@@ -411,16 +411,16 @@ bool rawcam_start(void) {
 	TRY (mmal_component_enable(r.rawcam), C2);
 	TRY (mmal_component_enable(r.isp), C2);
 	
-
-        TRY (!(r.pool = mmal_port_pool_create(r.output, r.buffer_num, r.buffer_size)), C1);
+	TRY (!(r.pool = mmal_port_pool_create(r.output, r.buffer_num, r.buffer_size)), C1);
 
 	fprintf(stderr, "rawcam-csi: enabling port - callback: %p - num buffers %d,%d\n", callback, r.buffer_num, r.output->buffer_num);
 	TRY (mmal_port_enable(r.output, callback), POOL);
 
 	for(int i = 0; i < r.buffer_num; i++) {
 		MMAL_BUFFER_HEADER_T *buffer;
-                TRY (!(buffer = mmal_queue_get(r.pool->queue)), PORT);
-                TRY (mmal_port_send_buffer(r.output, buffer), PORT);
+        TRY (!(buffer = mmal_queue_get(r.pool->queue)), PORT);
+        TRY (mmal_port_send_buffer(r.output, buffer), PORT);
+		fprintf(stderr, "rawcam-csi: buffer 0x%08x (data at 0x%08x) queued\n", buffer, buffer->data);
 	}
 	
 	atexit (rawcam_stop);
