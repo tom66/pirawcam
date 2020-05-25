@@ -145,8 +145,9 @@ struct pirawcam_buff_t *rawcam_buffer_get_friendly() {
 
 	assert(fbuff != NULL);
 
-	fbuff->mmal_ptr = buffer;
-	fbuff->data_ptr = buffer->data;
+	// we want raw pointers, and we clean these up with mmal manually, so we convert these to uint32_t
+	fbuff->mmal_ptr = (uint32_t)buffer;
+	fbuff->data_ptr = (uint32_t)buffer->data;
 	fbuff->length = buffer->length;
 	fbuff->flags = buffer->flags;
 	fbuff->pts = buffer->pts;

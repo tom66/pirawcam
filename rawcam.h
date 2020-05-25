@@ -19,8 +19,8 @@ struct rawcam_interface {
 };
 
 struct pirawcam_buff_t {
-	void *data_ptr;
-	void *mmal_ptr;
+	uint32_t data_ptr;
+	uint32_t mmal_ptr;
 	uint32_t length;
 	uint64_t pts;
 	uint64_t dts;
