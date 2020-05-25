@@ -72,7 +72,7 @@ enum teardown { NONE=0, PORT, POOL, C1, C2 };
 			return false;	      \
 		}} while(0)
 
-#define RAWCAM_VERSION 	"v0.0.9"
+#define RAWCAM_VERSION 	"v0.1.0"
 
 int mmal_ret_status = 0;
 int fi_counter = 0;
@@ -122,13 +122,13 @@ void rawcam_stop (void) {
 
 static void callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer) {
 	assert (r.running);
-	//if (!(buffer->flags&MMAL_BUFFER_HEADER_FLAG_CODECSIDEINFO)) {
+	if (!(buffer->flags&MMAL_BUFFER_HEADER_FLAG_CODECSIDEINFO)) {
 		fprintf(stderr,"queueing buffer %p (data %p, len %d, flags %02x)\n", buffer, buffer->data, buffer->length, buffer->flags);
 		mmal_queue_put(r.queue, buffer);
 		poke_efd (1);
-	//} else {
-	//	rawcam_buffer_free(buffer);
-	//}
+	} else {
+		rawcam_buffer_free(buffer);
+	}
 }
 
 PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
