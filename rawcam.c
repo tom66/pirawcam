@@ -72,7 +72,7 @@ enum teardown { NONE=0, PORT, POOL, C1, C2 };
 			return false;	      \
 		}} while(0)
 
-#define RAWCAM_VERSION 	"v0.1.0"
+#define RAWCAM_VERSION 	"v0.1.2"
 
 int mmal_ret_status = 0;
 int fi_counter = 0;
@@ -381,7 +381,7 @@ bool do_init(void) {
 	TRY(mmal_port_parameter_get(r.output, &r.rx_cfg.hdr), C2);
 	TRY(mmal_port_parameter_get(r.output, &r.rx_timing.hdr), C2);
 	r.buffer_num =  r.output->buffer_num;
-        r.buffer_size = r.output->buffer_size;
+    r.buffer_size = r.output->buffer_size;
 
 	return true;
 }
@@ -426,6 +426,18 @@ bool rawcam_start(void) {
 	atexit (rawcam_stop);
 
 	return true;
+}
+
+void rawcam_enable(void) {
+	fprintf(stderr, "rawcam-csi: enable()");
+	TRY (mmal_component_enable(r.rawcam), C2);
+	TRY (mmal_component_enable(r.isp), C2);
+}
+
+void rawcam_disable(void) {
+	fprintf(stderr, "rawcam-csi: disable()");
+	TRY (mmal_component_disable(r.rawcam), C2);
+	TRY (mmal_component_disable(r.isp), C2);
 }
 
 void rawcam_free(void) {

@@ -70,6 +70,8 @@ int rawcam_get_buffer_num_recommended();
 void rawcam_set_zero_copy(int zero_copy);
 int rawcam_get_zero_copy();
 void rawcam_flush(void);
+void rawcam_enable(void);
+void rawcam_disable(void);
 
 bool rawcam_format_commit();
 void rawcam_debug();
