@@ -141,7 +141,7 @@ PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
 
 struct pirawcam_buff_t *rawcam_buffer_get_friendly() {
 	MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
-	struct pirawcam_buff_t *fbuff = malloc(sizeof(struct pirawcam_buff_t *));
+	struct pirawcam_buff_t *fbuff = malloc(sizeof(struct pirawcam_buff_t));
 
 	fbuff->mmal_ptr = buffer;
 	fbuff->data_ptr = buffer->data;
