@@ -72,7 +72,7 @@ enum teardown { NONE=0, PORT, POOL, C1, C2 };
 			return false;	      \
 		}} while(0)
 
-#define RAWCAM_VERSION 	"v0.0.6"
+#define RAWCAM_VERSION 	"v0.0.7"
 
 int mmal_ret_status = 0;
 int fi_counter = 0;
@@ -142,6 +142,8 @@ PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
 struct pirawcam_buff_t *rawcam_buffer_get_friendly() {
 	MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
 	struct pirawcam_buff_t *fbuff = malloc(sizeof(struct pirawcam_buff_t));
+
+	assert(fbuff != NULL);
 
 	fbuff->mmal_ptr = buffer;
 	fbuff->data_ptr = buffer->data;
