@@ -1,3 +1,5 @@
+#include <Python.h>
+
 #include "interface/mmal/mmal.h"
 #include "interface/mmal/mmal_buffer.h"
 #include "interface/mmal/util/mmal_default_components.h"
@@ -19,6 +21,7 @@ struct rawcam_interface {
 struct rawcam_interface *rawcam_init (void);
 bool rawcam_start(void);
 MMAL_BUFFER_HEADER_T *rawcam_buffer_get(void);
+PyMemoryView *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer);
 unsigned int rawcam_buffer_count(void);
 void rawcam_buffer_free(MMAL_BUFFER_HEADER_T *buffer);
 void rawcam_stop(void);

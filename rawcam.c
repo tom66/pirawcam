@@ -1,4 +1,7 @@
 #define _GNU_SOURCE
+
+#include <Python.h>
+
 #include <ctype.h>
 #include <fcntl.h>
 //#include <libgen.h>
@@ -50,6 +53,17 @@ struct rawcam_interface_private {
 	.rawcam_isp = NULL,
 	.queue = NULL
 };
+
+/*
+struct pirawcam_buff_t {
+	void *data_ptr;
+	void *mmal_ptr;
+	uint32_t length;
+	uint64_t pts;
+	uint64_t dts;
+	uint16_t flags;
+};
+*/
 
 enum teardown { NONE=0, PORT, POOL, C1, C2 };
 
@@ -128,11 +142,33 @@ static void callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer) {
 	}
 }
 
+PyMemoryView *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
+	Py_buffer *buf = malloc(sizeof(Py_buffer));
+
+	PyBuffer_FillInfo(buf, NULL, buffer->data, buffer->length, true, PyBUF_ND);
+
+	return PyMemoryView_FromBuffer(buf);
+}
+
 MMAL_BUFFER_HEADER_T *rawcam_buffer_get(void) {
 	MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
 	//fprintf(stderr,"dequeueing buffer %p (data %p, len %d)\n", buffer, buffer->data, buffer->length);
 	return buffer;
 }
+
+/*
+struct pirawcam_buff_t *rawcam_buffer_container_get(void) {
+	struct pirawcam_buff_t *wrap_buffer = malloc(sizeof(struct pirawcam_buff_t *));
+	MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
+
+	wrap_buffer.mmal_ptr = buffer;
+	wrap_buffer.data_ptr = buffer->data;
+	wrap_buffer.length = buffer->length;
+	wrap_buffer.flags = buffer->flags;
+	wrap_buffer.pts = buffer->pts;
+	wrap_buffer.dts = buffer->dts;
+}
+*/
 
 unsigned int rawcam_buffer_count(void) {
 	return mmal_queue_length (r.queue);

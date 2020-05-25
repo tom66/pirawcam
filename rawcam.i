@@ -8,6 +8,7 @@
 #include "rawcam.h"
 %}
 
+/*
 %typemap(out) MMAL_BUFFER_HEADER_T *{
   Py_buffer *buf=malloc(sizeof *buf);
   PyBuffer_FillInfo(buf, NULL,  $1->data, $1->length, true /*ro*/, PyBUF_ND);
@@ -22,5 +23,6 @@
   //fprintf(stderr,"buf->internal is %p\n", buf->internal);
   $1 = buf->internal;
 }
+*/
 
 %include "rawcam.h"
