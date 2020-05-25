@@ -1,7 +1,6 @@
 %module rawcam
 
 %include "stdint.i"
-%include "interface/mmal/mmal_buffer.h"
 
 %rename("%(strip:[rawcam_])s") "";
 %{
