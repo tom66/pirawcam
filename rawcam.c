@@ -187,6 +187,11 @@ void rawcam_buffer_free(MMAL_BUFFER_HEADER_T *buffer) {
 	mmal_buffer_header_release(buffer);
 }
 
+void rawcam_buffer_free_friendly(struct pirawcam_buff_t *buffer) {
+	MMAL_BUFFER_HEADER_T *mmal_buffer = (MMAL_BUFFER_HEADER_T *)buffer->mmal_ptr;
+	rawcam_buffer_free(mmal_buffer);
+}
+
 void rawcam_set_buffer_size(int buffer_size) {
 	assert(buffer_size > 0);
 	r.buffer_size = buffer_size;

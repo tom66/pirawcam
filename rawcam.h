@@ -39,6 +39,7 @@ void rawcam_free(void);
 
 unsigned int rawcam_buffer_count(void);
 void rawcam_buffer_free(MMAL_BUFFER_HEADER_T *buffer);
+void rawcam_buffer_free_friendly(struct pirawcam_buff_t *buffer);
 void rawcam_set_buffer_size(int buffer_size);
 int rawcam_get_buffer_size();
 void rawcam_set_buffer_num(int buffer_num);
