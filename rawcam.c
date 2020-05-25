@@ -142,7 +142,7 @@ static void callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer) {
 	}
 }
 
-PyMemoryView *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
+PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
 	Py_buffer *buf = malloc(sizeof(Py_buffer));
 
 	PyBuffer_FillInfo(buf, NULL, buffer->data, buffer->length, true, PyBUF_ND);
