@@ -18,9 +18,19 @@ struct rawcam_interface {
   int eventfd;
 };
 
+struct pirawcam_buff_t {
+	void *data_ptr;
+	void *mmal_ptr;
+	uint32_t length;
+	uint64_t pts;
+	uint64_t dts;
+	uint16_t flags;
+};
+
 struct rawcam_interface *rawcam_init (void);
 bool rawcam_start(void);
 MMAL_BUFFER_HEADER_T *rawcam_buffer_get(void);
+struct pirawcam_buff_t *rawcam_buffer_get_friendly(void);
 PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer);
 unsigned int rawcam_buffer_count(void);
 void rawcam_buffer_free(MMAL_BUFFER_HEADER_T *buffer);

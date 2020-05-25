@@ -54,17 +54,6 @@ struct rawcam_interface_private {
 	.queue = NULL
 };
 
-/*
-struct pirawcam_buff_t {
-	void *data_ptr;
-	void *mmal_ptr;
-	uint32_t length;
-	uint64_t pts;
-	uint64_t dts;
-	uint16_t flags;
-};
-*/
-
 enum teardown { NONE=0, PORT, POOL, C1, C2 };
 
 #define WARN(x) fprintf(stderr, x "\n");
@@ -83,7 +72,7 @@ enum teardown { NONE=0, PORT, POOL, C1, C2 };
 			return false;	      \
 		}} while(0)
 
-#define RAWCAM_VERSION 	"v0.0.3"
+#define RAWCAM_VERSION 	"v0.0.4"
 
 int mmal_ret_status = 0;
 int fi_counter = 0;
@@ -148,6 +137,18 @@ PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
 	PyBuffer_FillInfo(buf, NULL, buffer->data, buffer->length, true, PyBUF_ND);
 
 	return PyMemoryView_FromBuffer(buf);
+}
+
+struct pirawcam_buff_t *rawcam_buffer_get_friendly() {
+	MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
+	struct pirawcam_buff_t *fbuff = malloc(sizeof(struct pirawcam_buff_t *));
+
+	fbuff->mmal_ptr = buffer;
+	fbuff->data_ptr = buffer->data;
+	fbuff->length = buffer->length;
+	fbuff->flags = buffer->flags;
+	fbuff->pts = buffer->pts;
+	fbuff->dts = buffer->dts;
 }
 
 MMAL_BUFFER_HEADER_T *rawcam_buffer_get(void) {
