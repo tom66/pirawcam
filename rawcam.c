@@ -140,6 +140,9 @@ PyObject *rawcam_get_memoryview_from_buffer_ptrval(uint32_t value) {
 PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
 	Py_buffer *buf = malloc(sizeof(Py_buffer));
 
+	fprintf(stderr, "rawcam_get_memoryview_from_buffer(): buffer=0x%08x, buffer->data=0x%08x buffer->length=%d", \
+		buffer, buffer->data, buffer->length);
+	
 	PyBuffer_FillInfo(buf, NULL, buffer->data, buffer->length, true, PyBUF_ND);
 
 	return PyMemoryView_FromBuffer(buf);
