@@ -131,6 +131,12 @@ static void callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer) {
 	}
 }
 
+// This really is a nasty function, there should be a better way of doing this!
+PyObject *rawcam_get_memoryview_from_buffer_ptrval(uint32_t value) {
+	assert(value != 0);
+	return rawcam_get_memoryview_from_buffer((MMAL_BUFFER_HEADER_T *) value);
+}
+
 PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
 	Py_buffer *buf = malloc(sizeof(Py_buffer));
 
