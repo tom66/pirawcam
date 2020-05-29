@@ -72,7 +72,7 @@ enum teardown { NONE=0, PORT, POOL, C1, C2 };
 			return false;	      \
 		}} while(0)
 
-#define RAWCAM_VERSION 	"v0.1.2"
+#define RAWCAM_VERSION 	"v0.1.5"
 
 int mmal_ret_status = 0;
 int fi_counter = 0;
