@@ -32,6 +32,7 @@ bool rawcam_start(void);
 MMAL_BUFFER_HEADER_T *rawcam_buffer_get(void);
 struct pirawcam_buff_t *rawcam_buffer_get_friendly(void);
 PyObject *rawcam_get_memoryview_from_buffer_ptrval(uint32_t value);
+void rawcam_get_memoryview_from_buffer_params(uint32_t base, uint32_t length);
 PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer);
 unsigned int rawcam_buffer_count(void);
 void rawcam_buffer_free(MMAL_BUFFER_HEADER_T *buffer);
@@ -74,6 +75,7 @@ int rawcam_get_zero_copy();
 void rawcam_flush(void);
 void rawcam_enable(void);
 void rawcam_disable(void);
+void rawcam_bcm_host_init();
 
 bool rawcam_format_commit();
 void rawcam_debug();
