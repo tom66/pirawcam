@@ -72,7 +72,7 @@ enum teardown { NONE=0, PORT, POOL, C1, C2 };
 			return false;	      \
 		}} while(0)
 
-#define RAWCAM_VERSION 	"v0.1.9"
+#define RAWCAM_VERSION 	"v0.2.0"
 
 int mmal_ret_status = 0;
 int fi_counter = 0;
@@ -141,7 +141,7 @@ PyObject *rawcam_get_memoryview_from_buffer_ptrval(uint32_t value) {
 }
 
 // This is -still- a nasty function, there -really- should be a better way of doing this!
-void rawcam_get_memoryview_from_buffer_params(uint32_t base, uint32_t length) {
+PyObject *rawcam_get_memoryview_from_buffer_params(uint32_t base, uint32_t length) {
 	PyObject *mv;
 	Py_buffer *buf = malloc(sizeof(Py_buffer));
 
