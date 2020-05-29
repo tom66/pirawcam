@@ -142,6 +142,7 @@ PyObject *rawcam_get_memoryview_from_buffer_ptrval(uint32_t value) {
 
 // This is -still- a nasty function, there -really- should be a better way of doing this!
 void rawcam_get_memoryview_from_buffer_params(uint32_t base, uint32_t length) {
+	PyObject *mv;
 	Py_buffer *buf = malloc(sizeof(Py_buffer));
 
 	fprintf(stderr, "rawcam_get_memoryview_from_buffer_params(): base=0x%08x length=%d\n", base, length);
@@ -150,7 +151,11 @@ void rawcam_get_memoryview_from_buffer_params(uint32_t base, uint32_t length) {
 
 	fprintf(stderr, "rawcam_get_memoryview_from_buffer_params(): mv_buf=0x%08x\n", buf);
 
-	return PyMemoryView_FromBuffer(buf);
+	mv = PyMemoryView_FromBuffer(buf);
+
+	fprintf(stderr, "rawcam_get_memoryview_from_buffer_params(): mv=0x%08x\n", mv);
+
+	return mv;
 }
 
 PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
