@@ -72,7 +72,7 @@ enum teardown { NONE=0, PORT, POOL, C1, C2 };
 			return false;	      \
 		}} while(0)
 
-#define RAWCAM_VERSION 	"v0.1.8"
+#define RAWCAM_VERSION 	"v0.1.9"
 
 int mmal_ret_status = 0;
 int fi_counter = 0;
@@ -147,6 +147,8 @@ void rawcam_get_memoryview_from_buffer_params(uint32_t base, uint32_t length) {
 	fprintf(stderr, "rawcam_get_memoryview_from_buffer_params(): base=0x%08x length=%d\n", base, length);
 
 	PyBuffer_FillInfo(buf, NULL, base, length, true, PyBUF_ND);
+
+	fprintf(stderr, "rawcam_get_memoryview_from_buffer_params(): mv_buf=0x%08x\n", buf);
 
 	return PyMemoryView_FromBuffer(buf);
 }
