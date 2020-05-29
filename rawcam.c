@@ -72,7 +72,7 @@ enum teardown { NONE=0, PORT, POOL, C1, C2 };
 			return false;	      \
 		}} while(0)
 
-#define RAWCAM_VERSION 	"v0.1.5"
+#define RAWCAM_VERSION 	"v0.1.6"
 
 int mmal_ret_status = 0;
 int fi_counter = 0;
@@ -134,15 +134,18 @@ static void callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer) {
 // This really is a nasty function, there should be a better way of doing this!
 PyObject *rawcam_get_memoryview_from_buffer_ptrval(uint32_t value) {
 	assert(value != 0);
+	fprintf(stderr, "rawcam_get_memoryview_from_buffer_ptrval(): buffer_val=0x%08x\n", buffer);
+
 	return rawcam_get_memoryview_from_buffer((MMAL_BUFFER_HEADER_T *) value);
 }
 
 PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
 	Py_buffer *buf = malloc(sizeof(Py_buffer));
 
-	fprintf(stderr, "rawcam_get_memoryview_from_buffer(): buffer=0x%08x, buffer->data=0x%08x buffer->length=%d", \
+	fprintf(stderr, "rawcam_get_memoryview_from_buffer(): buffer=0x%08x, buffer->data=0x%08x buffer->length=%d\n", \
 		buffer, buffer->data, buffer->length);
-	
+
+
 	PyBuffer_FillInfo(buf, NULL, buffer->data, buffer->length, true, PyBUF_ND);
 
 	return PyMemoryView_FromBuffer(buf);
