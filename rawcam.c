@@ -118,11 +118,11 @@ static void teardown(int what) {
 void rawcam_stop (void) {
 	r.running = 0;
 
-    fprintf(stderr, "try disable r.rawcam\n");
-    TRY (mmal_component_disable(r.rawcam), C2);
+    fprintf(stderr, "try destroy r.rawcam\n");
+    TRY (mmal_connection_destroy(r.rawcam), C2);
 
-    fprintf(stderr, "try disable r.isp\n");
-    TRY (mmal_component_disable(r.isp), C2);
+    fprintf(stderr, "try destroy r.isp\n");
+    TRY (mmal_connection_destroy(r.isp), C2);
     
     fprintf(stderr, "done disabling stuff\n");
 	//teardown(PORT);
