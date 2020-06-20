@@ -120,9 +120,10 @@ void rawcam_stop (void) {
 
     fprintf(stderr, "in stop()\n");
 
-    teardown(PORT);
+    //teardown(PORT);
 
-#if 0
+    fprintf(stderr, "D1\n");
+
     if(r.output) {
         mmal_port_disable(r.output);
     }
@@ -135,22 +136,39 @@ void rawcam_stop (void) {
     TRY (mmal_connection_destroy(r.isp), C2);
     */
 
+    fprintf(stderr, "D2\n");
+
     if (r.pool) {
+        fprintf(stderr, "x\n");
         mmal_port_pool_destroy(r.output, r.pool);
     }
     
-    if (r.rawcam_isp)   {
+    fprintf(stderr, "D3\n");
+
+    if (r.rawcam_isp) {
+        fprintf(stderr, "x\n");
         mmal_connection_disable(r.rawcam_isp);
         mmal_connection_destroy(r.rawcam_isp);
     }
 
-    if(r.isp) {
-        mmal_component_disable(r.isp);
-        mmal_component_disable(r.rawcam);
+    fprintf(stderr, "D4\n");
+
+    mmal_component_disable(r.isp);
+    mmal_component_disable(r.rawcam);
+
+    fprintf(stderr, "D5\n");
+
+    if (r.rawcam) {
+        fprintf(stderr, "x\n");
         mmal_component_destroy(r.rawcam);
+    }
+
+    fprintf(stderr, "D6\n");
+
+    if(r.isp) {
+        fprintf(stderr, "x\n");
         mmal_component_destroy(r.isp);
     }
-#endif
 
     fprintf(stderr, "done destroying stuff\n");
 }
