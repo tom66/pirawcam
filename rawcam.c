@@ -1,4 +1,7 @@
 #define _GNU_SOURCE
+
+#include <Python.h>
+
 #include <ctype.h>
 #include <fcntl.h>
 //#include <libgen.h>
@@ -69,7 +72,7 @@ enum teardown { NONE=0, PORT, POOL, C1, C2 };
 			return false;	      \
 		}} while(0)
 
-#define RAWCAM_VERSION 	"v0.0.1"
+#define RAWCAM_VERSION 	"v0.2.0"
 
 int mmal_ret_status = 0;
 int fi_counter = 0;
@@ -77,7 +80,7 @@ int fi_counter = 0;
 static void poke_efd(uint64_t u) {
 	//fprintf(stderr,"poking...");
 	write(r.eventfd, &u, sizeof u);
-	//fprintf(stderr,"poked\n");
+	//fprintf(stderr,"poked\n"); 
 }
 
 void signal_abort(int i) {
@@ -132,11 +135,80 @@ static void callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer) {
 	}
 }
 
+// This really is a nasty function, there should be a better way of doing this!
+// This only works in the same process. Use rawcam_get_memoryview_from_buffer_params otherwise.
+PyObject *rawcam_get_memoryview_from_buffer_ptrval(uint32_t value) {
+	assert(value != 0);
+	fprintf(stderr, "rawcam_get_memoryview_from_buffer_ptrval(): buffer_ptr_val=0x%08x\n", value);
+
+	return rawcam_get_memoryview_from_buffer((MMAL_BUFFER_HEADER_T *) value);
+}
+
+// This is -still- a nasty function, there -really- should be a better way of doing this!
+PyObject *rawcam_get_memoryview_from_buffer_params(uint32_t base, uint32_t length) {
+	PyObject *mv;
+	Py_buffer *buf = malloc(sizeof(Py_buffer));
+
+	fprintf(stderr, "rawcam_get_memoryview_from_buffer_params(): base=0x%08x length=%d\n", base, length);
+
+	PyBuffer_FillInfo(buf, NULL, base, length, true, PyBUF_ND);
+
+	fprintf(stderr, "rawcam_get_memoryview_from_buffer_params(): mv_buf=0x%08x\n", buf);
+
+	mv = PyMemoryView_FromBuffer(buf);
+
+	fprintf(stderr, "rawcam_get_memoryview_from_buffer_params(): mv=0x%08x\n", mv);
+
+	return mv;
+}
+
+PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
+	Py_buffer *buf = malloc(sizeof(Py_buffer));
+
+	fprintf(stderr, "rawcam_get_memoryview_from_buffer(): buffer=0x%08x, buffer->data=0x%08x buffer->length=%d\n", \
+		buffer, buffer->data, buffer->length);
+
+	PyBuffer_FillInfo(buf, NULL, buffer->data, buffer->length, true, PyBUF_ND);
+
+	return PyMemoryView_FromBuffer(buf);
+}
+
+struct pirawcam_buff_t *rawcam_buffer_get_friendly() {
+	MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
+	struct pirawcam_buff_t *fbuff = malloc(sizeof(struct pirawcam_buff_t));
+
+	assert(fbuff != NULL);
+
+	// we want raw pointers, and we clean these up with mmal manually, so we convert these to uint32_t
+	fbuff->mmal_ptr = (uint32_t)buffer;
+	fbuff->data_ptr = (uint32_t)buffer->data;
+	fbuff->length = buffer->length;
+	fbuff->flags = buffer->flags;
+	fbuff->pts = buffer->pts;
+	fbuff->dts = buffer->dts;
+
+	return fbuff;
+}
+
 MMAL_BUFFER_HEADER_T *rawcam_buffer_get(void) {
 	MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
 	//fprintf(stderr,"dequeueing buffer %p (data %p, len %d)\n", buffer, buffer->data, buffer->length);
 	return buffer;
 }
+
+/*
+struct pirawcam_buff_t *rawcam_buffer_container_get(void) {
+	struct pirawcam_buff_t *wrap_buffer = malloc(sizeof(struct pirawcam_buff_t *));
+	MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
+
+	wrap_buffer.mmal_ptr = buffer;
+	wrap_buffer.data_ptr = buffer->data;
+	wrap_buffer.length = buffer->length;
+	wrap_buffer.flags = buffer->flags;
+	wrap_buffer.pts = buffer->pts;
+	wrap_buffer.dts = buffer->dts;
+}
+*/
 
 unsigned int rawcam_buffer_count(void) {
 	return mmal_queue_length (r.queue);
@@ -147,6 +219,11 @@ void rawcam_buffer_free(MMAL_BUFFER_HEADER_T *buffer) {
 	buffer->length = 0;
 	mmal_port_send_buffer(r.output, buffer);
 	mmal_buffer_header_release(buffer);
+}
+
+void rawcam_buffer_free_friendly(struct pirawcam_buff_t *buffer) {
+	MMAL_BUFFER_HEADER_T *mmal_buffer = (MMAL_BUFFER_HEADER_T *)buffer->mmal_ptr;
+	rawcam_buffer_free(mmal_buffer);
 }
 
 void rawcam_set_buffer_size(int buffer_size) {
@@ -304,6 +381,10 @@ bool rawcam_format_commit() {
 	return true;
 }
 
+void rawcam_bcm_host_init() {
+	bcm_host_init();
+}
+
 void rawcam_debug() {
 	fprintf(stderr, "rawcam-csi (" RAWCAM_VERSION "): unpack=%d, pack=%d, image_id=0x%02x, data_lanes=%d, timing=(%d,%d,%d,%d,%d)\n", \
 		r.rx_cfg.unpack, r.rx_cfg.pack, r.rx_cfg.image_id, r.rx_cfg.data_lanes, \
@@ -343,7 +424,7 @@ bool do_init(void) {
 	TRY(mmal_port_parameter_get(r.output, &r.rx_cfg.hdr), C2);
 	TRY(mmal_port_parameter_get(r.output, &r.rx_timing.hdr), C2);
 	r.buffer_num =  r.output->buffer_num;
-        r.buffer_size = r.output->buffer_size;
+    r.buffer_size = r.output->buffer_size;
 
 	return true;
 }
@@ -373,16 +454,16 @@ bool rawcam_start(void) {
 	TRY (mmal_component_enable(r.rawcam), C2);
 	TRY (mmal_component_enable(r.isp), C2);
 	
-
-        TRY (!(r.pool = mmal_port_pool_create(r.output, r.buffer_num, r.buffer_size)), C1);
+	TRY (!(r.pool = mmal_port_pool_create(r.output, r.buffer_num, r.buffer_size)), C1);
 
 	fprintf(stderr, "rawcam-csi: enabling port - callback: %p - num buffers %d,%d\n", callback, r.buffer_num, r.output->buffer_num);
 	TRY (mmal_port_enable(r.output, callback), POOL);
 
 	for(int i = 0; i < r.buffer_num; i++) {
 		MMAL_BUFFER_HEADER_T *buffer;
-                TRY (!(buffer = mmal_queue_get(r.pool->queue)), PORT);
-                TRY (mmal_port_send_buffer(r.output, buffer), PORT);
+        TRY (!(buffer = mmal_queue_get(r.pool->queue)), PORT);
+        TRY (mmal_port_send_buffer(r.output, buffer), PORT);
+		fprintf(stderr, "rawcam-csi: buffer 0x%08x (data at 0x%08x) queued\n", buffer, buffer->data);
 	}
 	
 	atexit (rawcam_stop);
@@ -390,6 +471,22 @@ bool rawcam_start(void) {
 	return true;
 }
 
+void rawcam_enable(void) {
+	fprintf(stderr, "rawcam-csi: enable()\n");
+	TRY (mmal_component_enable(r.rawcam), C2);
+	TRY (mmal_component_enable(r.isp), C2);
+}
+
+void rawcam_disable(void) {
+	fprintf(stderr, "rawcam-csi: disable()\n");
+	TRY (mmal_component_disable(r.rawcam), C2);
+	TRY (mmal_component_disable(r.isp), C2);
+}
+
 void rawcam_free(void) {
 	/* FIXME */
+}
+
+void rawcam_flush(void) {
+	mmal_port_flush(r.output);
 }
