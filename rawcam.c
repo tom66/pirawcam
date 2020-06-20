@@ -125,6 +125,7 @@ void rawcam_stop (void) {
     fprintf(stderr, "D1\n");
 
     if(r.output) {
+        fprintf(stderr, "x\n");
         mmal_port_disable(r.output);
     }
 
@@ -227,6 +228,9 @@ struct pirawcam_buff_t *rawcam_buffer_get_friendly() {
 	struct pirawcam_buff_t *fbuff = malloc(sizeof(struct pirawcam_buff_t));
 
 	assert(fbuff != NULL);
+
+    fprintf(stderr, "rawcam_buffer_get_friendly(): buffer=0x%08x, length=%d, malloc=0x%08x\n", \
+        buffer, buffer->length, fbuff);
 
 	// we want raw pointers, and we clean these up with mmal manually, so we convert these to uint32_t
 	fbuff->mmal_ptr = (uint32_t)buffer;
