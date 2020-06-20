@@ -229,8 +229,8 @@ struct pirawcam_buff_t *rawcam_buffer_get_friendly() {
 
 	assert(fbuff != NULL);
 
-    fprintf(stderr, "rawcam_buffer_get_friendly(): buffer=0x%08x, length=%d, malloc=0x%08x\n", \
-        buffer, buffer->length, fbuff);
+    fprintf(stderr, "rawcam_buffer_get_friendly(): buffer=0x%08x, length=%d, malloc=0x%08x, sz=%d\n", \
+        buffer, buffer->length, fbuff, sizeof(struct pirawcam_buff_t));
 
 	// we want raw pointers, and we clean these up with mmal manually, so we convert these to uint32_t
 	fbuff->mmal_ptr = (uint32_t)buffer;
