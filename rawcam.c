@@ -118,13 +118,33 @@ static void teardown(int what) {
 void rawcam_stop (void) {
 	r.running = 0;
 
+    fprintf(stderr, "in stop()\n");
+
+    /*
     fprintf(stderr, "try destroy r.rawcam\n");
     TRY (mmal_connection_destroy(r.rawcam), C2);
 
     fprintf(stderr, "try destroy r.isp\n");
     TRY (mmal_connection_destroy(r.isp), C2);
+    */
+
+    if (r.pool) {
+        mmal_port_pool_destroy(r.output, r.pool);
+    }
     
-    fprintf(stderr, "done disabling stuff\n");
+    if (r.rawcam_isp)   {
+        mmal_connection_disable(r.rawcam_isp);
+        mmal_connection_destroy(r.rawcam_isp);
+    }
+
+    if(r.isp) {
+        mmal_component_disable(r.isp);
+        mmal_component_disable(r.rawcam);
+        mmal_component_destroy(r.rawcam);
+        mmal_component_destroy(r.isp);
+    }
+
+    fprintf(stderr, "done destroying stuff\n");
 	//teardown(PORT);
 }
 
