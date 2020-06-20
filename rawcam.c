@@ -120,10 +120,13 @@ void rawcam_stop (void) {
 
     fprintf(stderr, "in stop()\n");
 
+    teardown(PORT);
+
+#if 0
     if(r.output) {
         mmal_port_disable(r.output);
     }
-    
+
     /*
     fprintf(stderr, "try destroy r.rawcam\n");
     TRY (mmal_connection_destroy(r.rawcam), C2);
@@ -147,9 +150,9 @@ void rawcam_stop (void) {
         mmal_component_destroy(r.rawcam);
         mmal_component_destroy(r.isp);
     }
+#endif
 
     fprintf(stderr, "done destroying stuff\n");
-	//teardown(PORT);
 }
 
 static void callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer) {
