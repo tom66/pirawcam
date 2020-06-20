@@ -463,6 +463,8 @@ bool rawcam_start(void) {
 	fprintf(stderr, "rawcam-csi: enabling port - callback: %p - num buffers %d,%d\n", callback, r.buffer_num, r.output->buffer_num);
 	TRY (mmal_port_enable(r.output, callback), POOL);
 
+    fprintf(stderr, "rawcam-csi: queueing buffers\n");
+
 	for(int i = 0; i < r.buffer_num; i++) {
 		MMAL_BUFFER_HEADER_T *buffer;
         TRY (!(buffer = mmal_queue_get(r.pool->queue)), PORT);
