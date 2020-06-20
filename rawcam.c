@@ -114,7 +114,11 @@ static void teardown(int what) {
 
 void rawcam_stop (void) {
 	r.running = 0;
-	teardown(PORT);
+
+    TRY (mmal_component_disable(r.rawcam), C2);
+    TRY (mmal_component_disable(r.isp), C2);
+    
+	//teardown(PORT);
 }
 
 static void callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer) {
