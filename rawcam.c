@@ -276,7 +276,12 @@ void rawcam_buffer_free(MMAL_BUFFER_HEADER_T *buffer) {
 
 void rawcam_buffer_free_friendly(struct pirawcam_buff_t *buffer) {
 	MMAL_BUFFER_HEADER_T *mmal_buffer = (MMAL_BUFFER_HEADER_T *)buffer->mmal_ptr;
+
+    fprintf(stderr, "rawcam_buffer_free_friendly(): buffer=0x%08x, mmal=0x%08x\n", \
+        buffer, mmal_buffer);
+
 	rawcam_buffer_free(mmal_buffer);
+    free(buffer);
 }
 
 void rawcam_set_buffer_size(int buffer_size) {
