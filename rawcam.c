@@ -224,13 +224,21 @@ PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
 }
 
 struct pirawcam_buff_t *rawcam_buffer_get_friendly() {
+    fprintf(stderr, "rawcam_buffer_get_friendly(): entry: queue=0x%08x\n", r.queue);
+
 	MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
 	struct pirawcam_buff_t *fbuff = malloc(sizeof(struct pirawcam_buff_t));
 
-	assert(fbuff != NULL);
+	//assert(fbuff != NULL);
 
     fprintf(stderr, "rawcam_buffer_get_friendly(): buffer=0x%08x, length=%d, malloc=0x%08x, sz=%d\n", \
         buffer, buffer->length, fbuff, sizeof(struct pirawcam_buff_t));
+
+    if(fbuff == NULL) {
+        fprintf(stderr, "rawcam_buffer_get_friendly(): malloc fail?");
+
+        return NULL;
+    }
 
 	// we want raw pointers, and we clean these up with mmal manually, so we convert these to uint32_t
 	fbuff->mmal_ptr = (uint32_t)buffer;
