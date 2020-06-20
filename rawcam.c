@@ -120,6 +120,10 @@ void rawcam_stop (void) {
 
     fprintf(stderr, "in stop()\n");
 
+    if(r.output) {
+        mmal_port_disable(r.output);
+    }
+    
     /*
     fprintf(stderr, "try destroy r.rawcam\n");
     TRY (mmal_connection_destroy(r.rawcam), C2);
