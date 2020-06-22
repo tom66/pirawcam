@@ -224,18 +224,20 @@ PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
 }
 
 struct pirawcam_buff_t *rawcam_buffer_get_friendly() {
-    fprintf(stderr, "rawcam_buffer_get_friendly(): entry: queue=0x%08x\n", r.queue);
+    //fprintf(stderr, "rawcam_buffer_get_friendly(): entry: queue=0x%08x\n", r.queue);
 
 	MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
 	struct pirawcam_buff_t *fbuff = malloc(sizeof(struct pirawcam_buff_t));
 
 	//assert(fbuff != NULL);
 
+    /*
     fprintf(stderr, "rawcam_buffer_get_friendly(): buffer=0x%08x, length=%d, malloc=0x%08x, sz=%d\n", \
         buffer, buffer->length, fbuff, sizeof(struct pirawcam_buff_t));
+    */
 
     if(fbuff == NULL) {
-        fprintf(stderr, "rawcam_buffer_get_friendly(): malloc fail?");
+        fprintf(stderr, "rawcam_buffer_get_friendly(): malloc fail (%d bytes), return NULL pointer", sizeof(struct pirawcam_buff_t));
 
         return NULL;
     }
@@ -285,8 +287,10 @@ void rawcam_buffer_free(MMAL_BUFFER_HEADER_T *buffer) {
 void rawcam_buffer_free_friendly(struct pirawcam_buff_t *buffer) {
 	MMAL_BUFFER_HEADER_T *mmal_buffer = (MMAL_BUFFER_HEADER_T *)buffer->mmal_ptr;
 
+    /*
     fprintf(stderr, "rawcam_buffer_free_friendly(): buffer=0x%08x, mmal=0x%08x\n", \
         buffer, mmal_buffer);
+    */
 
 	rawcam_buffer_free(mmal_buffer);
     free(buffer);
