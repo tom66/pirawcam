@@ -28,30 +28,30 @@
 #include "rawcam.h"
 
 struct rawcam_interface_private {
-	MMAL_PARAMETER_CAMERA_RX_CONFIG_T rx_cfg;
-	MMAL_PARAMETER_CAMERA_RX_TIMING_T rx_timing;
-	int camera_num;
-	int buffer_num;
-	int buffer_size;
-	int buffer_width;
-	int buffer_height;
-	int running;
-	int eventfd;
-	MMAL_PORT_T *output;
-	MMAL_POOL_T *pool;
-	MMAL_COMPONENT_T *rawcam, *isp;
-	MMAL_CONNECTION_T *rawcam_isp;
-	MMAL_QUEUE_T *queue;
-	MMAL_BOOL_T zero_copy;
+    MMAL_PARAMETER_CAMERA_RX_CONFIG_T rx_cfg;
+    MMAL_PARAMETER_CAMERA_RX_TIMING_T rx_timing;
+    int camera_num;
+    int buffer_num;
+    int buffer_size;
+    int buffer_width;
+    int buffer_height;
+    int running;
+    int eventfd;
+    MMAL_PORT_T *output;
+    MMAL_POOL_T *pool;
+    MMAL_COMPONENT_T *rawcam, *isp;
+    MMAL_CONNECTION_T *rawcam_isp;
+    MMAL_QUEUE_T *queue;
+    MMAL_BOOL_T zero_copy;
 } r = {
-	.camera_num = 1,
-	.running = 0,
-	.eventfd = -1,
-	.output = NULL,
-	.rawcam = NULL,
-	.isp = NULL,
-	.rawcam_isp = NULL,
-	.queue = NULL
+    .camera_num = 1,
+    .running = 0,
+    .eventfd = -1,
+    .output = NULL,
+    .rawcam = NULL,
+    .isp = NULL,
+    .rawcam_isp = NULL,
+    .queue = NULL
 };
 
 enum teardown { NONE=0, PORT, POOL, C1, C2 };
@@ -64,59 +64,63 @@ enum teardown { NONE=0, PORT, POOL, C1, C2 };
 #endif
 
 /* abort if (!= MMAL_SUCCESS) */
-#define TRY(f,td) do {			      \
-		mmal_ret_status = (f); \
-		if (mmal_ret_status != MMAL_SUCCESS) { \
-			fprintf(stderr, "mmal error: %d during " #f "... dying (%s:%d)\n", mmal_ret_status, __FILE__, __LINE__); \
-			teardown(td);	      \
-			return false;	      \
-		}} while(0)
+#define TRY(f,td) do {                  \
+        mmal_ret_status = (f); \
+        if (mmal_ret_status != MMAL_SUCCESS) { \
+            fprintf(stderr, "mmal error: %d during " #f "... dying (%s:%d)\n", mmal_ret_status, __FILE__, __LINE__); \
+            teardown(td);          \
+            return false;          \
+        }} while(0)
 
-#define RAWCAM_VERSION 	"v0.2.0"
+#define RAWCAM_VERSION     "v0.2.0"
 
 int mmal_ret_status = 0;
 int fi_counter = 0;
 
-static void poke_efd(uint64_t u) {
-	//fprintf(stderr,"poking...");
-	write(r.eventfd, &u, sizeof u);
-	//fprintf(stderr,"poked\n"); 
+static void poke_efd(uint64_t u) 
+{
+    //fprintf(stderr,"poking...");
+    write(r.eventfd, &u, sizeof u);
+    //fprintf(stderr,"poked\n"); 
 }
 
-void signal_abort(int i) {
-	r.running = 0;
-	write(2, "aborting: signal_abort()\n", 9);
-	poke_efd (1);
+void signal_abort(int i) 
+{
+    r.running = 0;
+    write(2, "aborting: signal_abort()\n", 9);
+    poke_efd (1);
 }
 
-static void teardown(int what) {
-	switch (what) {
-	case PORT:
-	  //if (cfg.capture)
-	  mmal_port_disable(r.output);
-	/* fall-through */
-	case POOL:
-	if (r.pool)
-		mmal_port_pool_destroy(r.output, r.pool);
-	if (r.rawcam_isp)	{
-		mmal_connection_disable(r.rawcam_isp);
-		mmal_connection_destroy(r.rawcam_isp);
-	}
-	/* fall-through */
-	case C1:
-		mmal_component_disable(r.isp);
-		mmal_component_disable(r.rawcam);
-	/* fall-through */
-	case C2:
-	if (r.rawcam)
-		mmal_component_destroy(r.rawcam);
-	if (r.isp)
-		mmal_component_destroy(r.isp);
-	}
+static void teardown(int what) 
+{
+    switch (what) {
+    case PORT:
+      //if (cfg.capture)
+      mmal_port_disable(r.output);
+    /* fall-through */
+    case POOL:
+    if (r.pool)
+        mmal_port_pool_destroy(r.output, r.pool);
+    if (r.rawcam_isp)    {
+        mmal_connection_disable(r.rawcam_isp);
+        mmal_connection_destroy(r.rawcam_isp);
+    }
+    /* fall-through */
+    case C1:
+        mmal_component_disable(r.isp);
+        mmal_component_disable(r.rawcam);
+    /* fall-through */
+    case C2:
+    if (r.rawcam)
+        mmal_component_destroy(r.rawcam);
+    if (r.isp)
+        mmal_component_destroy(r.isp);
+    }
 }
 
-void rawcam_stop (void) {
-	r.running = 0;
+void rawcam_stop (void) 
+{
+    r.running = 0;
 
     fprintf(stderr, "in stop()\n");
 
@@ -174,68 +178,62 @@ void rawcam_stop (void) {
     fprintf(stderr, "done destroying stuff\n");
 }
 
-static void callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer) {
-	assert (r.running);
-	if (!(buffer->flags&MMAL_BUFFER_HEADER_FLAG_CODECSIDEINFO)) {
-		//fprintf(stderr,"queueing buffer %p (data %p, len %d, flags %02x)\n", buffer, buffer->data, buffer->length, buffer->flags);
-		mmal_queue_put(r.queue, buffer);
-		poke_efd (1);
-	} else {
-		rawcam_buffer_free(buffer);
-	}
+static void callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer) 
+{
+    assert (r.running);
+    if (!(buffer->flags&MMAL_BUFFER_HEADER_FLAG_CODECSIDEINFO)) {
+        //fprintf(stderr,"queueing buffer %p (data %p, len %d, flags %02x)\n", buffer, buffer->data, buffer->length, buffer->flags);
+        mmal_queue_put(r.queue, buffer);
+        poke_efd (1);
+    } else {
+        rawcam_buffer_free(buffer);
+    }
 }
 
 // This really is a nasty function, there should be a better way of doing this!
 // This only works in the same process. Use rawcam_get_memoryview_from_buffer_params otherwise.
-PyObject *rawcam_get_memoryview_from_buffer_ptrval(uint32_t value) {
-	assert(value != 0);
-	fprintf(stderr, "rawcam_get_memoryview_from_buffer_ptrval(): buffer_ptr_val=0x%08x\n", value);
+PyObject *rawcam_get_memoryview_from_buffer_ptrval(uint32_t value) 
+{
+    assert(value != 0);
+    fprintf(stderr, "rawcam_get_memoryview_from_buffer_ptrval(): buffer_ptr_val=0x%08x\n", value);
 
-	return rawcam_get_memoryview_from_buffer((MMAL_BUFFER_HEADER_T *) value);
+    return rawcam_get_memoryview_from_buffer((MMAL_BUFFER_HEADER_T *) value);
 }
 
 // This is -still- a nasty function, there -really- should be a better way of doing this!
-PyObject *rawcam_get_memoryview_from_buffer_params(uint32_t base, uint32_t length) {
-	PyObject *mv;
-	//Py_buffer *buf = malloc(sizeof(Py_buffer));
-	//fprintf(stderr, "rawcam_get_memoryview_from_buffer_params(): base=0x%08x length=%d\n", base, length);
-	//PyBuffer_FillInfo(buf, NULL, base, length, true, PyBUF_ND);
-	//fprintf(stderr, "rawcam_get_memoryview_from_buffer_params(): mv_buf=0x%08x\n", buf);
-
-	//mv = PyMemoryView_FromBuffer(buf);
-    mv = PyMemoryView_FromMemory(base, length, PyBUF_READ);
-
-	//fprintf(stderr, "rawcam_get_memoryview_from_buffer_params(): mv=0x%08x\n", mv);
-
-	return mv;
+PyObject *rawcam_get_memoryview_from_buffer_params(uint32_t base, uint32_t length) 
+{
+    return PyMemoryView_FromMemory(base, length, PyBUF_READ);
 }
 
-PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) {
-	Py_buffer *buf = malloc(sizeof(Py_buffer));
+PyObject *rawcam_get_memoryview_from_buffer(MMAL_BUFFER_HEADER_T *buffer) 
+{
+    Py_buffer *buf = malloc(sizeof(Py_buffer));
 
-	fprintf(stderr, "rawcam_get_memoryview_from_buffer(): buffer=0x%08x, buffer->data=0x%08x buffer->length=%d\n", \
-		buffer, buffer->data, buffer->length);
+    fprintf(stderr, "rawcam_get_memoryview_from_buffer(): buffer=0x%08x, buffer->data=0x%08x buffer->length=%d\n", \
+        buffer, buffer->data, buffer->length);
 
-	PyBuffer_FillInfo(buf, NULL, buffer->data, buffer->length, true, PyBUF_ND);
+    PyBuffer_FillInfo(buf, NULL, buffer->data, buffer->length, true, PyBUF_ND);
 
-	return PyMemoryView_FromBuffer(buf);
+    return PyMemoryView_FromBuffer(buf);
 }
 
-struct pirawcam_buff_t *rawcam_buffer_get_friendly() {
+struct pirawcam_buff_t *rawcam_buffer_get_friendly()
+{
     //fprintf(stderr, "rawcam_buffer_get_friendly(): entry: queue=0x%08x\n", r.queue);
 
-	MMAL_BUFFER_HEADER_T *buffer;
-	do {
-		buffer = mmal_queue_get(r.queue);
-		if (!buffer) {
-			fprintf(stderr, "rawcam_buffer_get_friendly(): mmal_queue_get returned null, retrying\n");
-			usleep(10000);
-		}
-	} while (!buffer);
+    MMAL_BUFFER_HEADER_T *buffer;
+    do {
+        buffer = mmal_queue_get(r.queue);
+        if (!buffer) {
+            fprintf(stderr, "rawcam_buffer_get_friendly(): mmal_queue_get returned null, retrying\n");
+            usleep(10000);
+        }
+    } while (!buffer);
 
-	struct pirawcam_buff_t *fbuff = malloc(sizeof(struct pirawcam_buff_t));
+    struct pirawcam_buff_t *fbuff = malloc(sizeof(struct pirawcam_buff_t));
 
-	//assert(fbuff != NULL);
+    //assert(fbuff != NULL);
 
     /*
     fprintf(stderr, "rawcam_buffer_get_friendly(): buffer=0x%08x, length=%d, malloc=0x%08x, sz=%d\n", \
@@ -248,323 +246,368 @@ struct pirawcam_buff_t *rawcam_buffer_get_friendly() {
         return NULL;
     }
 
-	// we want raw pointers, and we clean these up with mmal manually, so we convert these to uint32_t
-	fbuff->mmal_ptr = (uint32_t)buffer;
-	fbuff->data_ptr = (uint32_t)buffer->data;
-	fbuff->length = buffer->length;
-	fbuff->flags = buffer->flags;
-	fbuff->pts = buffer->pts;
-	fbuff->dts = buffer->dts;
+    // we want raw pointers, and we clean these up with mmal manually, so we convert these to uint32_t
+    fbuff->mmal_ptr = (uint32_t)buffer;
+    fbuff->data_ptr = (uint32_t)buffer->data;
+    fbuff->length = buffer->length;
+    fbuff->flags = buffer->flags;
+    fbuff->pts = buffer->pts;
+    fbuff->dts = buffer->dts;
 
-	return fbuff;
+    return fbuff;
 }
 
-MMAL_BUFFER_HEADER_T *rawcam_buffer_get(void) {
-	MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
-	//fprintf(stderr,"dequeueing buffer %p (data %p, len %d)\n", buffer, buffer->data, buffer->length);
-	return buffer;
+MMAL_BUFFER_HEADER_T *rawcam_buffer_get(void) 
+{
+    MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
+    //fprintf(stderr,"dequeueing buffer %p (data %p, len %d)\n", buffer, buffer->data, buffer->length);
+    return buffer;
 }
 
 /*
 struct pirawcam_buff_t *rawcam_buffer_container_get(void) {
-	struct pirawcam_buff_t *wrap_buffer = malloc(sizeof(struct pirawcam_buff_t *));
-	MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
+    struct pirawcam_buff_t *wrap_buffer = malloc(sizeof(struct pirawcam_buff_t *));
+    MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(r.queue);
 
-	wrap_buffer.mmal_ptr = buffer;
-	wrap_buffer.data_ptr = buffer->data;
-	wrap_buffer.length = buffer->length;
-	wrap_buffer.flags = buffer->flags;
-	wrap_buffer.pts = buffer->pts;
-	wrap_buffer.dts = buffer->dts;
+    wrap_buffer.mmal_ptr = buffer;
+    wrap_buffer.data_ptr = buffer->data;
+    wrap_buffer.length = buffer->length;
+    wrap_buffer.flags = buffer->flags;
+    wrap_buffer.pts = buffer->pts;
+    wrap_buffer.dts = buffer->dts;
 }
 */
 
-unsigned int rawcam_buffer_count(void) {
-	return mmal_queue_length (r.queue);
+unsigned int rawcam_buffer_count(void) 
+{
+    return mmal_queue_length (r.queue);
 }
 
-void rawcam_buffer_free(MMAL_BUFFER_HEADER_T *buffer) {
-	//fprintf(stderr, "buffer_free called with %p\n", buffer);
-	buffer->length = 0;
-	mmal_port_send_buffer(r.output, buffer);
-	mmal_buffer_header_release(buffer);
+void rawcam_buffer_free(MMAL_BUFFER_HEADER_T *buffer) 
+{
+    //fprintf(stderr, "buffer_free called with %p\n", buffer);
+    buffer->length = 0;
+    mmal_port_send_buffer(r.output, buffer);
+    mmal_buffer_header_release(buffer);
 }
 
-void rawcam_buffer_free_friendly(struct pirawcam_buff_t *buffer) {
-	MMAL_BUFFER_HEADER_T *mmal_buffer = (MMAL_BUFFER_HEADER_T *)buffer->mmal_ptr;
+void rawcam_buffer_free_friendly(struct pirawcam_buff_t *buffer) 
+{
+    MMAL_BUFFER_HEADER_T *mmal_buffer = (MMAL_BUFFER_HEADER_T *)buffer->mmal_ptr;
 
     /*
     fprintf(stderr, "rawcam_buffer_free_friendly(): buffer=0x%08x, mmal=0x%08x\n", \
         buffer, mmal_buffer);
     */
 
-	rawcam_buffer_free(mmal_buffer);
+    rawcam_buffer_free(mmal_buffer);
     free(buffer);
 }
 
-void rawcam_set_buffer_size(int buffer_size) {
-	assert(buffer_size > 0);
-	r.buffer_size = buffer_size;
-	r.output->buffer_size = buffer_size;
+void rawcam_set_buffer_size(int buffer_size) 
+{
+    assert(buffer_size > 0);
+    r.buffer_size = buffer_size;
+    r.output->buffer_size = buffer_size;
 }
 
-int rawcam_get_buffer_size() {
-	return r.buffer_size;
+int rawcam_get_buffer_size() 
+{
+    return r.buffer_size;
 }
 
-void rawcam_set_buffer_num(int buffer_num) {
-	assert(buffer_num > 0);
-	r.buffer_num = buffer_num;
-	r.output->buffer_num = buffer_num;
+void rawcam_set_buffer_num(int buffer_num) 
+{
+    assert(buffer_num > 0);
+    r.buffer_num = buffer_num;
+    r.output->buffer_num = buffer_num;
 }
 
-int rawcam_get_buffer_num() {
-	return r.buffer_num;
+int rawcam_get_buffer_num() 
+{
+    return r.buffer_num;
 }
 
-int rawcam_get_eventfd() {
-	return r.eventfd;
+int rawcam_get_eventfd() 
+{
+    return r.eventfd;
 }
 
-void rawcam_set_image_id(uint8_t image_id) {
-	assert(image_id >= 0x03);
-	r.rx_cfg.image_id = image_id;
+void rawcam_set_image_id(uint8_t image_id) 
+{
+    assert(image_id >= 0x03);
+    r.rx_cfg.image_id = image_id;
 }
 
-uint8_t rawcam_get_image_id() {
-	return r.rx_cfg.image_id;
+uint8_t rawcam_get_image_id() 
+{
+    return r.rx_cfg.image_id;
 }
 
-void rawcam_set_data_lanes(uint8_t n_lanes) {
-	assert(n_lanes >= 1 && n_lanes <= 4);
-	r.rx_cfg.data_lanes = n_lanes;
+void rawcam_set_data_lanes(uint8_t n_lanes) 
+{
+    assert(n_lanes >= 1 && n_lanes <= 4);
+    r.rx_cfg.data_lanes = n_lanes;
 }
 
-int rawcam_get_data_lanes() {
-	return r.rx_cfg.data_lanes;
+int rawcam_get_data_lanes() 
+{
+    return r.rx_cfg.data_lanes;
 }
 
-void rawcam_set_buffer_dimensions(int width, int height) {
-	assert(width > 0 && height > 0);
-	r.buffer_width = width;
-	r.buffer_height = height;
+void rawcam_set_buffer_dimensions(int width, int height) 
+{
+    assert(width > 0 && height > 0);
+    r.buffer_width = width;
+    r.buffer_height = height;
 }
 
-void rawcam_set_decode_mode(int decode_mode) {
-	r.rx_cfg.decode = decode_mode;
+void rawcam_set_decode_mode(int decode_mode) 
+{
+    r.rx_cfg.decode = decode_mode;
 }
 
-int rawcam_get_decode_mode() {
-	return r.rx_cfg.decode;
+int rawcam_get_decode_mode() 
+{
+    return r.rx_cfg.decode;
 }
 
-void rawcam_set_encode_mode(int encode_mode) {
-	r.rx_cfg.encode = encode_mode;
+void rawcam_set_encode_mode(int encode_mode) 
+{
+    r.rx_cfg.encode = encode_mode;
 }
 
-int rawcam_get_encode_mode() {
-	return r.rx_cfg.encode;
+int rawcam_get_encode_mode() 
+{
+    return r.rx_cfg.encode;
 }
 
-void rawcam_set_unpack_mode(int unpack_mode) {
-	r.rx_cfg.unpack = unpack_mode;
+void rawcam_set_unpack_mode(int unpack_mode) 
+{
+    r.rx_cfg.unpack = unpack_mode;
 }
 
-int rawcam_get_unpack_mode() {
-	return r.rx_cfg.unpack;
+int rawcam_get_unpack_mode() 
+{
+    return r.rx_cfg.unpack;
 }
 
-void rawcam_set_pack_mode(int pack_mode) {
-	r.rx_cfg.pack = pack_mode;
+void rawcam_set_pack_mode(int pack_mode) 
+{
+    r.rx_cfg.pack = pack_mode;
 }
 
-int rawcam_get_pack_mode() {
-	return r.rx_cfg.pack;
+int rawcam_get_pack_mode() 
+{
+    return r.rx_cfg.pack;
 }
 
-void rawcam_set_encode_block_length(int encode) {
-	r.rx_cfg.encode_block_length = encode;
+void rawcam_set_encode_block_length(int encode) 
+{
+    r.rx_cfg.encode_block_length = encode;
 }
 
-int rawcam_get_encode_block_length() {
-	return r.rx_cfg.encode_block_length;
+int rawcam_get_encode_block_length() 
+{
+    return r.rx_cfg.encode_block_length;
 }
 
-void rawcam_set_embedded_data_lines(int data_lines) {
-	r.rx_cfg.embedded_data_lines = data_lines;
+void rawcam_set_embedded_data_lines(int data_lines) 
+{
+    r.rx_cfg.embedded_data_lines = data_lines;
 }
 
-int rawcam_get_embedded_data_lines() {
-	return r.rx_cfg.embedded_data_lines;
+int rawcam_get_embedded_data_lines() 
+{
+    return r.rx_cfg.embedded_data_lines;
 }
 
-void rawcam_set_timing(int t1, int t2, int t3, int t4, int t5, int term1, int term2) {
-	r.rx_timing.timing1 = t1;
-	r.rx_timing.timing2 = t2;
-	r.rx_timing.timing3 = t3;
-	r.rx_timing.timing4 = t4;
-	r.rx_timing.timing5 = t5;
-	r.rx_timing.timing5 = t5;
-	r.rx_timing.term1 = term1;
-	r.rx_timing.term2 = term2;
+void rawcam_set_timing(int t1, int t2, int t3, int t4, int t5, int term1, int term2) 
+{
+    r.rx_timing.timing1 = t1;
+    r.rx_timing.timing2 = t2;
+    r.rx_timing.timing3 = t3;
+    r.rx_timing.timing4 = t4;
+    r.rx_timing.timing5 = t5;
+    r.rx_timing.timing5 = t5;
+    r.rx_timing.term1 = term1;
+    r.rx_timing.term2 = term2;
 }
 
-void rawcam_set_encoding_fourcc(char a, char b, char c, char d) {
-	fprintf(stderr, "rawcam-csi: request: encoding=0x%08x (FOURCC:%c%c%c%c)\n", \
-		MMAL_FOURCC(a, b, c, d), a, b, c, d);
-		
-	r.output->format->encoding = MMAL_FOURCC(a, b, c, d);
+void rawcam_set_encoding_fourcc(char a, char b, char c, char d) 
+{
+    fprintf(stderr, "rawcam-csi: request: encoding=0x%08x (FOURCC:%c%c%c%c)\n", \
+        MMAL_FOURCC(a, b, c, d), a, b, c, d);
+        
+    r.output->format->encoding = MMAL_FOURCC(a, b, c, d);
 }
 
-void rawcam_get_encoding_int() {
-	return r.output->format->encoding;
+void rawcam_get_encoding_int() 
+{
+    return r.output->format->encoding;
 }
 
-void rawcam_set_camera_num(int num) {
-	assert(num == 0 || num == 1);
-	r.camera_num = num;
+void rawcam_set_camera_num(int num) 
+{
+    assert(num == 0 || num == 1);
+    r.camera_num = num;
 }
 
-int rawcam_get_camera_num() {
-	//int num = 0;
-	//mmal_port_parameter_get_int32(r.output, MMAL_PARAMETER_CAMERA_NUM, &num);
-	return r.camera_num;
+int rawcam_get_camera_num() 
+{
+    //int num = 0;
+    //mmal_port_parameter_get_int32(r.output, MMAL_PARAMETER_CAMERA_NUM, &num);
+    return r.camera_num;
 }
 
-int rawcam_get_buffer_size_recommended() {
-	return r.output->buffer_size_recommended;
+int rawcam_get_buffer_size_recommended() 
+{
+    return r.output->buffer_size_recommended;
 }
 
-int rawcam_get_buffer_num_recommended() {
-	return r.output->buffer_num_recommended;
+int rawcam_get_buffer_num_recommended() 
+{
+    return r.output->buffer_num_recommended;
 }
 
-void rawcam_set_zero_copy(int zero_copy) {
-	if(zero_copy) {
-		r.zero_copy = MMAL_TRUE;
-	} else {
-		r.zero_copy = MMAL_FALSE;
-	}
+void rawcam_set_zero_copy(int zero_copy) 
+{
+    if(zero_copy) {
+        r.zero_copy = MMAL_TRUE;
+    } else {
+        r.zero_copy = MMAL_FALSE;
+    }
 }
 
-int rawcam_get_zero_copy() {
-	MMAL_BOOL_T  res;
-	mmal_port_parameter_get_boolean(r.output, MMAL_PARAMETER_ZERO_COPY, &res);
-	return res == MMAL_TRUE;
+int rawcam_get_zero_copy() 
+{
+    MMAL_BOOL_T  res;
+    mmal_port_parameter_get_boolean(r.output, MMAL_PARAMETER_ZERO_COPY, &res);
+    return res == MMAL_TRUE;
 }
 
-bool rawcam_format_commit() {
-	return true;
+bool rawcam_format_commit() 
+{
+    return true;
 }
 
-void rawcam_bcm_host_init() {
-	bcm_host_init();
+void rawcam_bcm_host_init() 
+{
+    bcm_host_init();
 }
 
-void rawcam_debug() {
-	fprintf(stderr, "rawcam-csi (" RAWCAM_VERSION "): unpack=%d, pack=%d, image_id=0x%02x, data_lanes=%d, timing=(%d,%d,%d,%d,%d)\n", \
-		r.rx_cfg.unpack, r.rx_cfg.pack, r.rx_cfg.image_id, r.rx_cfg.data_lanes, \
-		r.rx_timing.timing1, r.rx_timing.timing2, r.rx_timing.timing3, r.rx_timing.timing4, r.rx_timing.timing5);
-		
-	fprintf(stderr, "rawcam-csi (" RAWCAM_VERSION "): term=(%d,%d), frame_dimensions=crop:(%d x %d) es-video:(%d x %d), camera_num=%d\n", \
-		r.rx_timing.term1, r.rx_timing.term2, \
-		r.output->format->es->video.crop.width, r.output->format->es->video.crop.height, \
-		r.output->format->es->video.width, r.output->format->es->video.height, \
-		rawcam_get_camera_num());
-		
-	fprintf(stderr, "rawcam-csi (" RAWCAM_VERSION "): buffers=set:(%d x %d) out:(%d x %d) recommended:(%d x %d) minimum:(%d x %d)\n", \
-		r.buffer_size, r.buffer_num, r.output->buffer_size, r.output->buffer_num, \
-		r.output->buffer_size_recommended, r.output->buffer_num_recommended, \
-		r.output->buffer_size_min, r.output->buffer_num_min);
-		
-	fprintf(stderr, "rawcam-csi (" RAWCAM_VERSION "): encoding=0x%08x (FOURCC:%c%c%c%c)\n", r.output->format->encoding, \
-		(r.output->format->encoding & 0x000000ff),       (r.output->format->encoding & 0x0000ff00) >>  8, \
-		(r.output->format->encoding & 0x00ff0000) >> 16, (r.output->format->encoding & 0xff000000) >> 24);
+void rawcam_debug() 
+{
+    fprintf(stderr, "rawcam-csi (" RAWCAM_VERSION "): unpack=%d, pack=%d, image_id=0x%02x, data_lanes=%d, timing=(%d,%d,%d,%d,%d)\n", \
+        r.rx_cfg.unpack, r.rx_cfg.pack, r.rx_cfg.image_id, r.rx_cfg.data_lanes, \
+        r.rx_timing.timing1, r.rx_timing.timing2, r.rx_timing.timing3, r.rx_timing.timing4, r.rx_timing.timing5);
+        
+    fprintf(stderr, "rawcam-csi (" RAWCAM_VERSION "): term=(%d,%d), frame_dimensions=crop:(%d x %d) es-video:(%d x %d), camera_num=%d\n", \
+        r.rx_timing.term1, r.rx_timing.term2, \
+        r.output->format->es->video.crop.width, r.output->format->es->video.crop.height, \
+        r.output->format->es->video.width, r.output->format->es->video.height, \
+        rawcam_get_camera_num());
+        
+    fprintf(stderr, "rawcam-csi (" RAWCAM_VERSION "): buffers=set:(%d x %d) out:(%d x %d) recommended:(%d x %d) minimum:(%d x %d)\n", \
+        r.buffer_size, r.buffer_num, r.output->buffer_size, r.output->buffer_num, \
+        r.output->buffer_size_recommended, r.output->buffer_num_recommended, \
+        r.output->buffer_size_min, r.output->buffer_num_min);
+        
+    fprintf(stderr, "rawcam-csi (" RAWCAM_VERSION "): encoding=0x%08x (FOURCC:%c%c%c%c)\n", r.output->format->encoding, \
+        (r.output->format->encoding & 0x000000ff),       (r.output->format->encoding & 0x0000ff00) >>  8, \
+        (r.output->format->encoding & 0x00ff0000) >> 16, (r.output->format->encoding & 0xff000000) >> 24);
 }
 
-bool do_init(void) {
-	fprintf(stderr, "rawcam-csi: rawcam.do_init()\n");
-	
-	TRY (!(r.eventfd = eventfd(0, 0)), NONE);
-	
-	bcm_host_init();
-	
-	TRY (mmal_component_create("vc.ril.rawcam", &r.rawcam), NONE);
-	TRY (mmal_component_create("vc.ril.isp", &r.isp), C2);
-	
-	r.output = r.rawcam->output[0];
-	
-	r.rx_cfg.hdr = (MMAL_PARAMETER_HEADER_T){ .id=MMAL_PARAMETER_CAMERA_RX_CONFIG, .size=sizeof r.rx_cfg };
-	r.rx_timing.hdr = (MMAL_PARAMETER_HEADER_T){ .id=MMAL_PARAMETER_CAMERA_RX_TIMING, .size=sizeof r.rx_timing };
-	
-	TRY(mmal_port_parameter_get(r.output, &r.rx_cfg.hdr), C2);
-	TRY(mmal_port_parameter_get(r.output, &r.rx_timing.hdr), C2);
-	r.buffer_num =  r.output->buffer_num;
+bool do_init(void) 
+{
+    fprintf(stderr, "rawcam-csi: rawcam.do_init()\n");
+    
+    TRY (!(r.eventfd = eventfd(0, 0)), NONE);
+    
+    bcm_host_init();
+    
+    TRY (mmal_component_create("vc.ril.rawcam", &r.rawcam), NONE);
+    TRY (mmal_component_create("vc.ril.isp", &r.isp), C2);
+    
+    r.output = r.rawcam->output[0];
+    
+    r.rx_cfg.hdr = (MMAL_PARAMETER_HEADER_T){ .id=MMAL_PARAMETER_CAMERA_RX_CONFIG, .size=sizeof r.rx_cfg };
+    r.rx_timing.hdr = (MMAL_PARAMETER_HEADER_T){ .id=MMAL_PARAMETER_CAMERA_RX_TIMING, .size=sizeof r.rx_timing };
+    
+    TRY(mmal_port_parameter_get(r.output, &r.rx_cfg.hdr), C2);
+    TRY(mmal_port_parameter_get(r.output, &r.rx_timing.hdr), C2);
+    r.buffer_num =  r.output->buffer_num;
     r.buffer_size = r.output->buffer_size;
 
-	return true;
+    return true;
 }
 
-struct rawcam_interface *rawcam_init (void) {
-	fprintf(stderr, "rawcam-csi: rawcam_init()\n");
-	
-	return (do_init() ? (struct rawcam_interface *)&r : NULL);
+struct rawcam_interface *rawcam_init (void) 
+{
+    fprintf(stderr, "rawcam-csi: rawcam_init()\n");
+    
+    return (do_init() ? (struct rawcam_interface *)&r : NULL);
 }
 
-bool rawcam_start(void) {
-	fprintf(stderr, "rawcam-csi: rawcam_start()\n");
-	
-	r.queue = mmal_queue_create();
-	//r.output->buffer_size = r.buffer_size;
-	//r.output->buffer_num = r.buffer_num;	
-	TRY (mmal_port_parameter_set_int32(r.output, MMAL_PARAMETER_CAMERA_NUM, r.camera_num), C2);
-	TRY (mmal_port_parameter_set(r.output, &r.rx_cfg.hdr), C2);
-	TRY (mmal_port_parameter_set(r.output, &r.rx_timing.hdr), C2);
-	TRY (mmal_port_parameter_set_boolean(r.output, MMAL_PARAMETER_ZERO_COPY, r.zero_copy), C2);
-	r.output->format->es->video.crop.width = r.buffer_width;
-	r.output->format->es->video.crop.height = r.buffer_height;
-	r.output->format->es->video.width = VCOS_ALIGN_UP(r.buffer_width, 16);
-	r.output->format->es->video.height = VCOS_ALIGN_UP(r.buffer_height, 16);
-	TRY (mmal_port_format_commit(r.output), C2);
+bool rawcam_start(void) 
+{
+    fprintf(stderr, "rawcam-csi: rawcam_start()\n");
+    
+    r.queue = mmal_queue_create();
+    //r.output->buffer_size = r.buffer_size;
+    //r.output->buffer_num = r.buffer_num;    
+    TRY (mmal_port_parameter_set_int32(r.output, MMAL_PARAMETER_CAMERA_NUM, r.camera_num), C2);
+    TRY (mmal_port_parameter_set(r.output, &r.rx_cfg.hdr), C2);
+    TRY (mmal_port_parameter_set(r.output, &r.rx_timing.hdr), C2);
+    TRY (mmal_port_parameter_set_boolean(r.output, MMAL_PARAMETER_ZERO_COPY, r.zero_copy), C2);
+    r.output->format->es->video.crop.width = r.buffer_width;
+    r.output->format->es->video.crop.height = r.buffer_height;
+    r.output->format->es->video.width = VCOS_ALIGN_UP(r.buffer_width, 16);
+    r.output->format->es->video.height = VCOS_ALIGN_UP(r.buffer_height, 16);
+    TRY (mmal_port_format_commit(r.output), C2);
 
-	TRY (mmal_component_enable(r.rawcam), C2);
-	TRY (mmal_component_enable(r.isp), C2);
-	
-	TRY (!(r.pool = mmal_port_pool_create(r.output, r.buffer_num, r.buffer_size)), C1);
+    TRY (mmal_component_enable(r.rawcam), C2);
+    TRY (mmal_component_enable(r.isp), C2);
+    
+    TRY (!(r.pool = mmal_port_pool_create(r.output, r.buffer_num, r.buffer_size)), C1);
 
-	fprintf(stderr, "rawcam-csi: enabling port - callback: %p - num buffers %d,%d\n", callback, r.buffer_num, r.output->buffer_num);
-	TRY (mmal_port_enable(r.output, callback), POOL);
+    fprintf(stderr, "rawcam-csi: enabling port - callback: %p - num buffers %d,%d\n", callback, r.buffer_num, r.output->buffer_num);
+    TRY (mmal_port_enable(r.output, callback), POOL);
 
     fprintf(stderr, "rawcam-csi: queueing buffers\n");
 
-	for(int i = 0; i < r.buffer_num; i++) {
-		MMAL_BUFFER_HEADER_T *buffer;
+    for(int i = 0; i < r.buffer_num; i++) {
+        MMAL_BUFFER_HEADER_T *buffer;
         TRY (!(buffer = mmal_queue_get(r.pool->queue)), PORT);
         TRY (mmal_port_send_buffer(r.output, buffer), PORT);
-		fprintf(stderr, "rawcam-csi: buffer 0x%08x (data at 0x%08x) queued\n", buffer, buffer->data);
-	}
-	
-	atexit (rawcam_stop);
+        fprintf(stderr, "rawcam-csi: buffer 0x%08x (data at 0x%08x) queued\n", buffer, buffer->data);
+    }
+    
+    atexit (rawcam_stop);
 
-	return true;
+    return true;
 }
 
-void rawcam_enable(void) {
-	fprintf(stderr, "rawcam-csi: enable()\n");
-	TRY (mmal_component_enable(r.rawcam), C2);
-	TRY (mmal_component_enable(r.isp), C2);
+void rawcam_enable(void) 
+{
+    fprintf(stderr, "rawcam-csi: enable()\n");
+    TRY (mmal_component_enable(r.rawcam), C2);
+    TRY (mmal_component_enable(r.isp), C2);
 }
 
-void rawcam_disable(void) {
-	fprintf(stderr, "rawcam-csi: disable()\n");
-	TRY (mmal_component_disable(r.rawcam), C2);
-	TRY (mmal_component_disable(r.isp), C2);
+void rawcam_disable(void) 
+{
+    fprintf(stderr, "rawcam-csi: disable()\n");
+    TRY (mmal_component_disable(r.rawcam), C2);
+    TRY (mmal_component_disable(r.isp), C2);
 }
 
-void rawcam_free(void) {
-	/* FIXME */
+void rawcam_free(void)
+{
+    /* FIXME */
 }
 
-void rawcam_flush(void) {
-	mmal_port_flush(r.output);
+void rawcam_flush(void) 
+{
+    mmal_port_flush(r.output);
 }
