@@ -3733,15 +3733,16 @@ SwigPyBuiltin_iternextfunc_closure(SwigPyWrapperFunction wrapper, PyObject *a) {
 #define SWIGTYPE_p_char swig_types[4]
 #define SWIGTYPE_p_int swig_types[5]
 #define SWIGTYPE_p_long_long swig_types[6]
-#define SWIGTYPE_p_rawcam_interface swig_types[7]
-#define SWIGTYPE_p_short swig_types[8]
-#define SWIGTYPE_p_signed_char swig_types[9]
-#define SWIGTYPE_p_unsigned_char swig_types[10]
-#define SWIGTYPE_p_unsigned_int swig_types[11]
-#define SWIGTYPE_p_unsigned_long_long swig_types[12]
-#define SWIGTYPE_p_unsigned_short swig_types[13]
-static swig_type_info *swig_types[15];
-static swig_module_info swig_module = {swig_types, 14, 0, 0, 0, 0};
+#define SWIGTYPE_p_pirawcam_buff_t swig_types[7]
+#define SWIGTYPE_p_rawcam_interface swig_types[8]
+#define SWIGTYPE_p_short swig_types[9]
+#define SWIGTYPE_p_signed_char swig_types[10]
+#define SWIGTYPE_p_unsigned_char swig_types[11]
+#define SWIGTYPE_p_unsigned_int swig_types[12]
+#define SWIGTYPE_p_unsigned_long_long swig_types[13]
+#define SWIGTYPE_p_unsigned_short swig_types[14]
+static swig_type_info *swig_types[16];
+static swig_module_info swig_module = {swig_types, 15, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3941,20 +3942,6 @@ SWIGINTERNINLINE PyObject*
 }
 
 
-SWIGINTERNINLINE PyObject*
-  SWIG_From_bool  (bool value)
-{
-  return PyBool_FromLong(value ? 1 : 0);
-}
-
-
-SWIGINTERNINLINE PyObject*
-  SWIG_From_unsigned_SS_int  (unsigned int value)
-{
-  return PyInt_FromSize_t((size_t) value);
-}
-
-
 SWIGINTERN int
 SWIG_AsVal_unsigned_SS_long (PyObject *obj, unsigned long *val) 
 {
@@ -4004,15 +3991,94 @@ SWIG_AsVal_unsigned_SS_long (PyObject *obj, unsigned long *val)
 
 
 SWIGINTERN int
-SWIG_AsVal_unsigned_SS_char (PyObject * obj, unsigned char *val)
+SWIG_AsVal_unsigned_SS_int (PyObject * obj, unsigned int *val)
 {
   unsigned long v;
   int res = SWIG_AsVal_unsigned_SS_long (obj, &v);
   if (SWIG_IsOK(res)) {
-    if ((v > UCHAR_MAX)) {
+    if ((v > UINT_MAX)) {
       return SWIG_OverflowError;
     } else {
-      if (val) *val = (unsigned char)(v);
+      if (val) *val = (unsigned int)(v);
+    }
+  }  
+  return res;
+}
+
+
+SWIGINTERNINLINE PyObject*
+  SWIG_From_unsigned_SS_int  (unsigned int value)
+{
+  return PyInt_FromSize_t((size_t) value);
+}
+
+
+#if defined(LLONG_MAX) && !defined(SWIG_LONG_LONG_AVAILABLE)
+#  define SWIG_LONG_LONG_AVAILABLE
+#endif
+
+
+#ifdef SWIG_LONG_LONG_AVAILABLE
+SWIGINTERN int
+SWIG_AsVal_unsigned_SS_long_SS_long (PyObject *obj, unsigned long long *val)
+{
+  int res = SWIG_TypeError;
+  if (PyLong_Check(obj)) {
+    unsigned long long v = PyLong_AsUnsignedLongLong(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = v;
+      return SWIG_OK;
+    } else {
+      PyErr_Clear();
+      res = SWIG_OverflowError;
+    }
+  } else {
+    unsigned long v;
+    res = SWIG_AsVal_unsigned_SS_long (obj,&v);
+    if (SWIG_IsOK(res)) {
+      if (val) *val = v;
+      return res;
+    }
+  }
+#ifdef SWIG_PYTHON_CAST_MODE
+  {
+    const double mant_max = 1LL << DBL_MANT_DIG;
+    double d;
+    res = SWIG_AsVal_double (obj,&d);
+    if (SWIG_IsOK(res) && !SWIG_CanCastAsInteger(&d, 0, mant_max))
+      return SWIG_OverflowError;
+    if (SWIG_IsOK(res) && SWIG_CanCastAsInteger(&d, 0, mant_max)) {
+      if (val) *val = (unsigned long long)(d);
+      return SWIG_AddCast(res);
+    }
+    res = SWIG_TypeError;
+  }
+#endif
+  return res;
+}
+#endif
+
+
+#ifdef SWIG_LONG_LONG_AVAILABLE
+SWIGINTERNINLINE PyObject* 
+SWIG_From_unsigned_SS_long_SS_long  (unsigned long long value)
+{
+  return (value > LONG_MAX) ?
+    PyLong_FromUnsignedLongLong(value) : PyInt_FromLong((long)(value));
+}
+#endif
+
+
+SWIGINTERN int
+SWIG_AsVal_unsigned_SS_short (PyObject * obj, unsigned short *val)
+{
+  unsigned long v;
+  int res = SWIG_AsVal_unsigned_SS_long (obj, &v);
+  if (SWIG_IsOK(res)) {
+    if ((v > USHRT_MAX)) {
+      return SWIG_OverflowError;
+    } else {
+      if (val) *val = (unsigned short)(v);
     }
   }  
   return res;
@@ -4027,6 +4093,36 @@ SWIG_From_unsigned_SS_long  (unsigned long value)
 {
   return (value > LONG_MAX) ?
     PyLong_FromUnsignedLong(value) : PyInt_FromLong((long)(value));
+}
+
+
+SWIGINTERNINLINE PyObject *
+SWIG_From_unsigned_SS_short  (unsigned short value)
+{    
+  return SWIG_From_unsigned_SS_long  (value);
+}
+
+
+SWIGINTERNINLINE PyObject*
+  SWIG_From_bool  (bool value)
+{
+  return PyBool_FromLong(value ? 1 : 0);
+}
+
+
+SWIGINTERN int
+SWIG_AsVal_unsigned_SS_char (PyObject * obj, unsigned char *val)
+{
+  unsigned long v;
+  int res = SWIG_AsVal_unsigned_SS_long (obj, &v);
+  if (SWIG_IsOK(res)) {
+    if ((v > UCHAR_MAX)) {
+      return SWIG_OverflowError;
+    } else {
+      if (val) *val = (unsigned char)(v);
+    }
+  }  
+  return res;
 }
 
 
@@ -4606,6 +4702,341 @@ fail:
 
 SWIGPY_DESTRUCTOR_CLOSURE(_wrap_delete_interface) /* defines _wrap_delete_interface_destructor_closure */
 
+SWIGINTERN PyObject *_wrap_pirawcam_buff_t_data_ptr_set(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  uint32_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:pirawcam_buff_t_data_ptr_set",&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "pirawcam_buff_t_data_ptr_set" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "pirawcam_buff_t_data_ptr_set" "', argument " "2"" of type '" "uint32_t""'");
+  } 
+  arg2 = (uint32_t)(val2);
+  if (arg1) (arg1)->data_ptr = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_pirawcam_buff_t_data_ptr_get(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  uint32_t result;
+  
+  if (args && PyTuple_Check(args) && PyTuple_GET_SIZE(args) > 0) SWIG_exception_fail(SWIG_TypeError, "pirawcam_buff_t_data_ptr_get takes no arguments");
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "pirawcam_buff_t_data_ptr_get" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  result = (uint32_t) ((arg1)->data_ptr);
+  resultobj = SWIG_From_unsigned_SS_int((unsigned int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_pirawcam_buff_t_mmal_ptr_set(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  uint32_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:pirawcam_buff_t_mmal_ptr_set",&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "pirawcam_buff_t_mmal_ptr_set" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "pirawcam_buff_t_mmal_ptr_set" "', argument " "2"" of type '" "uint32_t""'");
+  } 
+  arg2 = (uint32_t)(val2);
+  if (arg1) (arg1)->mmal_ptr = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_pirawcam_buff_t_mmal_ptr_get(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  uint32_t result;
+  
+  if (args && PyTuple_Check(args) && PyTuple_GET_SIZE(args) > 0) SWIG_exception_fail(SWIG_TypeError, "pirawcam_buff_t_mmal_ptr_get takes no arguments");
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "pirawcam_buff_t_mmal_ptr_get" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  result = (uint32_t) ((arg1)->mmal_ptr);
+  resultobj = SWIG_From_unsigned_SS_int((unsigned int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_pirawcam_buff_t_length_set(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  uint32_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:pirawcam_buff_t_length_set",&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "pirawcam_buff_t_length_set" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "pirawcam_buff_t_length_set" "', argument " "2"" of type '" "uint32_t""'");
+  } 
+  arg2 = (uint32_t)(val2);
+  if (arg1) (arg1)->length = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_pirawcam_buff_t_length_get(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  uint32_t result;
+  
+  if (args && PyTuple_Check(args) && PyTuple_GET_SIZE(args) > 0) SWIG_exception_fail(SWIG_TypeError, "pirawcam_buff_t_length_get takes no arguments");
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "pirawcam_buff_t_length_get" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  result = (uint32_t) ((arg1)->length);
+  resultobj = SWIG_From_unsigned_SS_int((unsigned int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_pirawcam_buff_t_pts_set(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  uint64_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned long long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:pirawcam_buff_t_pts_set",&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "pirawcam_buff_t_pts_set" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_long_SS_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "pirawcam_buff_t_pts_set" "', argument " "2"" of type '" "uint64_t""'");
+  } 
+  arg2 = (uint64_t)(val2);
+  if (arg1) (arg1)->pts = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_pirawcam_buff_t_pts_get(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  uint64_t result;
+  
+  if (args && PyTuple_Check(args) && PyTuple_GET_SIZE(args) > 0) SWIG_exception_fail(SWIG_TypeError, "pirawcam_buff_t_pts_get takes no arguments");
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "pirawcam_buff_t_pts_get" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  result = (uint64_t) ((arg1)->pts);
+  resultobj = SWIG_From_unsigned_SS_long_SS_long((unsigned long long)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_pirawcam_buff_t_dts_set(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  uint64_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned long long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:pirawcam_buff_t_dts_set",&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "pirawcam_buff_t_dts_set" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_long_SS_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "pirawcam_buff_t_dts_set" "', argument " "2"" of type '" "uint64_t""'");
+  } 
+  arg2 = (uint64_t)(val2);
+  if (arg1) (arg1)->dts = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_pirawcam_buff_t_dts_get(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  uint64_t result;
+  
+  if (args && PyTuple_Check(args) && PyTuple_GET_SIZE(args) > 0) SWIG_exception_fail(SWIG_TypeError, "pirawcam_buff_t_dts_get takes no arguments");
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "pirawcam_buff_t_dts_get" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  result = (uint64_t) ((arg1)->dts);
+  resultobj = SWIG_From_unsigned_SS_long_SS_long((unsigned long long)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_pirawcam_buff_t_flags_set(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  uint16_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned short val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:pirawcam_buff_t_flags_set",&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "pirawcam_buff_t_flags_set" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_short(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "pirawcam_buff_t_flags_set" "', argument " "2"" of type '" "uint16_t""'");
+  } 
+  arg2 = (uint16_t)(val2);
+  if (arg1) (arg1)->flags = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_pirawcam_buff_t_flags_get(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  uint16_t result;
+  
+  if (args && PyTuple_Check(args) && PyTuple_GET_SIZE(args) > 0) SWIG_exception_fail(SWIG_TypeError, "pirawcam_buff_t_flags_get takes no arguments");
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "pirawcam_buff_t_flags_get" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  result = (uint16_t) ((arg1)->flags);
+  resultobj = SWIG_From_unsigned_SS_short((unsigned short)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN int _wrap_new_pirawcam_buff_t(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *result = 0 ;
+  
+  if (args && PyTuple_Check(args) && PyTuple_GET_SIZE(args) > 0) SWIG_exception_fail(SWIG_TypeError, "new_pirawcam_buff_t takes no arguments");
+  result = (struct pirawcam_buff_t *)calloc(1, sizeof(struct pirawcam_buff_t));
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_pirawcam_buff_t, SWIG_BUILTIN_INIT |  0 );
+  return resultobj == Py_None ? -1 : 0;
+fail:
+  return -1;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_pirawcam_buff_t(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  
+  if (args && PyTuple_Check(args) && PyTuple_GET_SIZE(args) > 0) SWIG_exception_fail(SWIG_TypeError, "delete_pirawcam_buff_t takes no arguments");
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_pirawcam_buff_t, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_pirawcam_buff_t" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  free((char *) arg1);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGPY_DESTRUCTOR_CLOSURE(_wrap_delete_pirawcam_buff_t) /* defines _wrap_delete_pirawcam_buff_t_destructor_closure */
+
 SWIGINTERN PyObject *_wrap_init(PyObject *self, PyObject *args) {
   PyObject *resultobj = 0;
   struct rawcam_interface *result = 0 ;
@@ -4638,12 +5069,95 @@ SWIGINTERN PyObject *_wrap_buffer_get(PyObject *self, PyObject *args) {
   
   if (!PyArg_ParseTuple(args,(char *)":buffer_get")) SWIG_fail;
   result = (MMAL_BUFFER_HEADER_T *)rawcam_buffer_get();
-  {
-    Py_buffer *buf=malloc(sizeof *buf);
-    PyBuffer_FillInfo(buf, NULL,  result->data, result->length, true /*ro*/, PyBUF_ND);
-    buf->internal = result;
-    resultobj = PyMemoryView_FromBuffer(buf);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_MMAL_BUFFER_HEADER_T, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_buffer_get_friendly(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":buffer_get_friendly")) SWIG_fail;
+  result = (struct pirawcam_buff_t *)rawcam_buffer_get_friendly();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_get_memoryview_from_buffer_ptrval(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  uint32_t arg1 ;
+  unsigned int val1 ;
+  int ecode1 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:get_memoryview_from_buffer_ptrval",&obj0)) SWIG_fail;
+  ecode1 = SWIG_AsVal_unsigned_SS_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "get_memoryview_from_buffer_ptrval" "', argument " "1"" of type '" "uint32_t""'");
+  } 
+  arg1 = (uint32_t)(val1);
+  result = (PyObject *)rawcam_get_memoryview_from_buffer_ptrval(arg1);
+  resultobj = result;
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_get_memoryview_from_buffer_params(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  uint32_t arg1 ;
+  uint32_t arg2 ;
+  unsigned int val1 ;
+  int ecode1 = 0 ;
+  unsigned int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:get_memoryview_from_buffer_params",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_unsigned_SS_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "get_memoryview_from_buffer_params" "', argument " "1"" of type '" "uint32_t""'");
+  } 
+  arg1 = (uint32_t)(val1);
+  ecode2 = SWIG_AsVal_unsigned_SS_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "get_memoryview_from_buffer_params" "', argument " "2"" of type '" "uint32_t""'");
+  } 
+  arg2 = (uint32_t)(val2);
+  result = (PyObject *)rawcam_get_memoryview_from_buffer_params(arg1,arg2);
+  resultobj = result;
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_get_memoryview_from_buffer(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  MMAL_BUFFER_HEADER_T *arg1 = (MMAL_BUFFER_HEADER_T *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:get_memoryview_from_buffer",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MMAL_BUFFER_HEADER_T, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "get_memoryview_from_buffer" "', argument " "1"" of type '" "MMAL_BUFFER_HEADER_T *""'"); 
   }
+  arg1 = (MMAL_BUFFER_HEADER_T *)(argp1);
+  result = (PyObject *)rawcam_get_memoryview_from_buffer(arg1);
+  resultobj = result;
   return resultobj;
 fail:
   return NULL;
@@ -4666,16 +5180,16 @@ fail:
 SWIGINTERN PyObject *_wrap_buffer_free(PyObject *self, PyObject *args) {
   PyObject *resultobj = 0;
   MMAL_BUFFER_HEADER_T *arg1 = (MMAL_BUFFER_HEADER_T *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
   PyObject * obj0 = 0 ;
   
   if (!PyArg_ParseTuple(args,(char *)"O:buffer_free",&obj0)) SWIG_fail;
-  {
-    //fprintf(stderr,"buf in %p\n",obj0);
-    Py_buffer *buf=PyMemoryView_GET_BUFFER (obj0);
-    //fprintf(stderr,"buf2 is %p\n", buf);
-    //fprintf(stderr,"buf->internal is %p\n", buf->internal);
-    arg1 = buf->internal;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_MMAL_BUFFER_HEADER_T, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "buffer_free" "', argument " "1"" of type '" "MMAL_BUFFER_HEADER_T *""'"); 
   }
+  arg1 = (MMAL_BUFFER_HEADER_T *)(argp1);
   rawcam_buffer_free(arg1);
   resultobj = SWIG_Py_Void();
   return resultobj;
@@ -4701,6 +5215,27 @@ SWIGINTERN PyObject *_wrap_free(PyObject *self, PyObject *args) {
   
   if (!PyArg_ParseTuple(args,(char *)":free")) SWIG_fail;
   rawcam_free();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_buffer_free_friendly(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  struct pirawcam_buff_t *arg1 = (struct pirawcam_buff_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:buffer_free_friendly",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_pirawcam_buff_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "buffer_free_friendly" "', argument " "1"" of type '" "struct pirawcam_buff_t *""'"); 
+  }
+  arg1 = (struct pirawcam_buff_t *)(argp1);
+  rawcam_buffer_free_friendly(arg1);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -5307,6 +5842,54 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_flush(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  
+  if (!PyArg_ParseTuple(args,(char *)":flush")) SWIG_fail;
+  rawcam_flush();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_enable(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  
+  if (!PyArg_ParseTuple(args,(char *)":enable")) SWIG_fail;
+  rawcam_enable();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_disable(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  
+  if (!PyArg_ParseTuple(args,(char *)":disable")) SWIG_fail;
+  rawcam_disable();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_bcm_host_init(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  
+  if (!PyArg_ParseTuple(args,(char *)":bcm_host_init")) SWIG_fail;
+  rawcam_bcm_host_init();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_format_commit(PyObject *self, PyObject *args) {
   PyObject *resultobj = 0;
   bool result;
@@ -5350,10 +5933,15 @@ static PyMethodDef SwigMethods[] = {
 	 { "init", _wrap_init, METH_VARARGS, NULL},
 	 { "start", _wrap_start, METH_VARARGS, NULL},
 	 { "buffer_get", _wrap_buffer_get, METH_VARARGS, NULL},
+	 { "buffer_get_friendly", _wrap_buffer_get_friendly, METH_VARARGS, NULL},
+	 { "get_memoryview_from_buffer_ptrval", _wrap_get_memoryview_from_buffer_ptrval, METH_VARARGS, NULL},
+	 { "get_memoryview_from_buffer_params", _wrap_get_memoryview_from_buffer_params, METH_VARARGS, NULL},
+	 { "get_memoryview_from_buffer", _wrap_get_memoryview_from_buffer, METH_VARARGS, NULL},
 	 { "buffer_count", _wrap_buffer_count, METH_VARARGS, NULL},
 	 { "buffer_free", _wrap_buffer_free, METH_VARARGS, NULL},
 	 { "stop", _wrap_stop, METH_VARARGS, NULL},
 	 { "free", _wrap_free, METH_VARARGS, NULL},
+	 { "buffer_free_friendly", _wrap_buffer_free_friendly, METH_VARARGS, NULL},
 	 { "set_buffer_size", _wrap_set_buffer_size, METH_VARARGS, NULL},
 	 { "get_buffer_size", _wrap_get_buffer_size, METH_VARARGS, NULL},
 	 { "set_buffer_num", _wrap_set_buffer_num, METH_VARARGS, NULL},
@@ -5384,6 +5972,10 @@ static PyMethodDef SwigMethods[] = {
 	 { "get_buffer_num_recommended", _wrap_get_buffer_num_recommended, METH_VARARGS, NULL},
 	 { "set_zero_copy", _wrap_set_zero_copy, METH_VARARGS, NULL},
 	 { "get_zero_copy", _wrap_get_zero_copy, METH_VARARGS, NULL},
+	 { "flush", _wrap_flush, METH_VARARGS, NULL},
+	 { "enable", _wrap_enable, METH_VARARGS, NULL},
+	 { "disable", _wrap_disable, METH_VARARGS, NULL},
+	 { "bcm_host_init", _wrap_bcm_host_init, METH_VARARGS, NULL},
 	 { "format_commit", _wrap_format_commit, METH_VARARGS, NULL},
 	 { "debug", _wrap_debug, METH_VARARGS, NULL},
 	 { "get_eventfd", _wrap_get_eventfd, METH_VARARGS, NULL},
@@ -5631,6 +6223,244 @@ static PyHeapTypeObject SwigPyBuiltin__rawcam_interface_type = {
 
 SWIGINTERN SwigPyClientData SwigPyBuiltin__rawcam_interface_clientdata = {0, 0, 0, 0, 0, 0, (PyTypeObject *)&SwigPyBuiltin__rawcam_interface_type};
 
+static SwigPyGetSet pirawcam_buff_t_mmal_ptr_getset = { _wrap_pirawcam_buff_t_mmal_ptr_get, _wrap_pirawcam_buff_t_mmal_ptr_set };
+static SwigPyGetSet pirawcam_buff_t___dict___getset = { SwigPyObject_get___dict__, 0 };
+static SwigPyGetSet pirawcam_buff_t_data_ptr_getset = { _wrap_pirawcam_buff_t_data_ptr_get, _wrap_pirawcam_buff_t_data_ptr_set };
+static SwigPyGetSet pirawcam_buff_t_dts_getset = { _wrap_pirawcam_buff_t_dts_get, _wrap_pirawcam_buff_t_dts_set };
+static SwigPyGetSet pirawcam_buff_t_length_getset = { _wrap_pirawcam_buff_t_length_get, _wrap_pirawcam_buff_t_length_set };
+static SwigPyGetSet pirawcam_buff_t_pts_getset = { _wrap_pirawcam_buff_t_pts_get, _wrap_pirawcam_buff_t_pts_set };
+static SwigPyGetSet pirawcam_buff_t_flags_getset = { _wrap_pirawcam_buff_t_flags_get, _wrap_pirawcam_buff_t_flags_set };
+SWIGINTERN PyGetSetDef SwigPyBuiltin__pirawcam_buff_t_getset[] = {
+    { (char *) "mmal_ptr", (getter) SwigPyBuiltin_GetterClosure, (setter) SwigPyBuiltin_SetterClosure, (char *)"pirawcam_buff_t.mmal_ptr", (void *) &pirawcam_buff_t_mmal_ptr_getset }
+,
+    { (char *) "__dict__", (getter) SwigPyBuiltin_GetterClosure, (setter) 0, (char *)"pirawcam_buff_t.__dict__", (void *) &pirawcam_buff_t___dict___getset }
+,
+    { (char *) "data_ptr", (getter) SwigPyBuiltin_GetterClosure, (setter) SwigPyBuiltin_SetterClosure, (char *)"pirawcam_buff_t.data_ptr", (void *) &pirawcam_buff_t_data_ptr_getset }
+,
+    { (char *) "dts", (getter) SwigPyBuiltin_GetterClosure, (setter) SwigPyBuiltin_SetterClosure, (char *)"pirawcam_buff_t.dts", (void *) &pirawcam_buff_t_dts_getset }
+,
+    { (char *) "length", (getter) SwigPyBuiltin_GetterClosure, (setter) SwigPyBuiltin_SetterClosure, (char *)"pirawcam_buff_t.length", (void *) &pirawcam_buff_t_length_getset }
+,
+    { (char *) "pts", (getter) SwigPyBuiltin_GetterClosure, (setter) SwigPyBuiltin_SetterClosure, (char *)"pirawcam_buff_t.pts", (void *) &pirawcam_buff_t_pts_getset }
+,
+    { (char *) "flags", (getter) SwigPyBuiltin_GetterClosure, (setter) SwigPyBuiltin_SetterClosure, (char *)"pirawcam_buff_t.flags", (void *) &pirawcam_buff_t_flags_getset }
+,
+    {NULL, NULL, NULL, NULL, NULL} /* Sentinel */
+};
+
+SWIGINTERN PyObject *
+SwigPyBuiltin__pirawcam_buff_t_richcompare(PyObject *self, PyObject *other, int op) {
+  PyObject *result = NULL;
+  PyObject *tuple = PyTuple_New(1);
+  assert(tuple);
+  PyTuple_SET_ITEM(tuple, 0, other);
+  Py_XINCREF(other);
+  if (!result) {
+    if (SwigPyObject_Check(self) && SwigPyObject_Check(other)) {
+      result = SwigPyObject_richcompare((SwigPyObject *)self, (SwigPyObject *)other, op);
+    } else {
+      result = Py_NotImplemented;
+      Py_INCREF(result);
+    }
+  }
+  Py_DECREF(tuple);
+  return result;
+}
+
+SWIGINTERN PyMethodDef SwigPyBuiltin__pirawcam_buff_t_methods[] = {
+  { NULL, NULL, 0, NULL } /* Sentinel */
+};
+
+static PyHeapTypeObject SwigPyBuiltin__pirawcam_buff_t_type = {
+  {
+#if PY_VERSION_HEX >= 0x03000000
+    PyVarObject_HEAD_INIT(NULL, 0)
+#else
+    PyObject_HEAD_INIT(NULL)
+    0,                                        /* ob_size */
+#endif
+    "rawcam.pirawcam_buff_t",                 /* tp_name */
+    sizeof(SwigPyObject),                     /* tp_basicsize */
+    0,                                        /* tp_itemsize */
+    (destructor) (destructor) _wrap_delete_pirawcam_buff_t_destructor_closure,/* tp_dealloc */
+    (printfunc) 0,                            /* tp_print */
+    (getattrfunc) 0,                          /* tp_getattr */
+    (setattrfunc) 0,                          /* tp_setattr */
+#if PY_VERSION_HEX >= 0x03000000
+    0,                                        /* tp_compare */
+#else
+    (cmpfunc) 0,                              /* tp_compare */
+#endif
+    (reprfunc) 0,                             /* tp_repr */
+    &SwigPyBuiltin__pirawcam_buff_t_type.as_number,               /* tp_as_number */
+    &SwigPyBuiltin__pirawcam_buff_t_type.as_sequence,             /* tp_as_sequence */
+    &SwigPyBuiltin__pirawcam_buff_t_type.as_mapping,              /* tp_as_mapping */
+    (hashfunc) SwigPyObject_hash,             /* tp_hash */
+    (ternaryfunc) 0,                          /* tp_call */
+    (reprfunc) 0,                             /* tp_str */
+    (getattrofunc) 0,                         /* tp_getattro */
+    (setattrofunc) 0,                         /* tp_setattro */
+    &SwigPyBuiltin__pirawcam_buff_t_type.as_buffer,               /* tp_as_buffer */
+#if PY_VERSION_HEX >= 0x03000000
+    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,   /* tp_flags */
+#else
+    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /* tp_flags */
+#endif
+    "::pirawcam_buff_t",                      /* tp_doc */
+    (traverseproc) 0,                         /* tp_traverse */
+    (inquiry) 0,                              /* tp_clear */
+    (richcmpfunc) SwigPyBuiltin__pirawcam_buff_t_richcompare,     /* tp_richcompare */
+    0,                                        /* tp_weaklistoffset */
+    (getiterfunc) 0,                          /* tp_iter */
+    (iternextfunc) 0,                         /* tp_iternext */
+    SwigPyBuiltin__pirawcam_buff_t_methods,   /* tp_methods */
+    0,                                        /* tp_members */
+    SwigPyBuiltin__pirawcam_buff_t_getset,    /* tp_getset */
+    0,                                        /* tp_base */
+    0,                                        /* tp_dict */
+    (descrgetfunc) 0,                         /* tp_descr_get */
+    (descrsetfunc) 0,                         /* tp_descr_set */
+    (Py_ssize_t) offsetof(SwigPyObject, dict),/* tp_dictoffset */
+    (initproc) _wrap_new_pirawcam_buff_t,     /* tp_init */
+    (allocfunc) 0,                            /* tp_alloc */
+    (newfunc) 0,                              /* tp_new */
+    (freefunc) 0,                             /* tp_free */
+    (inquiry) 0,                              /* tp_is_gc */
+    (PyObject *) 0,                           /* tp_bases */
+    (PyObject *) 0,                           /* tp_mro */
+    (PyObject *) 0,                           /* tp_cache */
+    (PyObject *) 0,                           /* tp_subclasses */
+    (PyObject *) 0,                           /* tp_weaklist */
+    (destructor) 0,                           /* tp_del */
+#if PY_VERSION_HEX >= 0x02060000
+    (int) 0,                                  /* tp_version_tag */
+#endif
+#if PY_VERSION_HEX >= 0x03040000
+    (destructor) 0,                           /* tp_finalize */
+#endif
+#ifdef COUNT_ALLOCS
+    (Py_ssize_t) 0,                           /* tp_allocs */
+    (Py_ssize_t) 0,                           /* tp_frees */
+    (Py_ssize_t) 0,                           /* tp_maxalloc */
+#if PY_VERSION_HEX >= 0x02050000
+    0,                                        /* tp_prev */
+#endif
+    0,                                        /* tp_next */
+#endif
+  },
+#if PY_VERSION_HEX >= 0x03050000
+  {
+    (unaryfunc) 0,                            /* am_await */
+    (unaryfunc) 0,                            /* am_aiter */
+    (unaryfunc) 0,                            /* am_anext */
+  },
+#endif
+  {
+    (binaryfunc) 0,                           /* nb_add */
+    (binaryfunc) 0,                           /* nb_subtract */
+    (binaryfunc) 0,                           /* nb_multiply */
+#if PY_VERSION_HEX < 0x03000000
+    (binaryfunc) 0,                           /* nb_divide */
+#endif
+    (binaryfunc) 0,                           /* nb_remainder */
+    (binaryfunc) 0,                           /* nb_divmod */
+    (ternaryfunc) 0,                          /* nb_power */
+    (unaryfunc) 0,                            /* nb_negative */
+    (unaryfunc) 0,                            /* nb_positive */
+    (unaryfunc) 0,                            /* nb_absolute */
+    (inquiry) 0,                              /* nb_nonzero */
+    (unaryfunc) 0,                            /* nb_invert */
+    (binaryfunc) 0,                           /* nb_lshift */
+    (binaryfunc) 0,                           /* nb_rshift */
+    (binaryfunc) 0,                           /* nb_and */
+    (binaryfunc) 0,                           /* nb_xor */
+    (binaryfunc) 0,                           /* nb_or */
+#if PY_VERSION_HEX < 0x03000000
+    (coercion) 0,                             /* nb_coerce */
+#endif
+    (unaryfunc) 0,                            /* nb_int */
+#if PY_VERSION_HEX >= 0x03000000
+    (void *) 0,                               /* nb_reserved */
+#else
+    (unaryfunc) 0,                            /* nb_long */
+#endif
+    (unaryfunc) 0,                            /* nb_float */
+#if PY_VERSION_HEX < 0x03000000
+    (unaryfunc) 0,                            /* nb_oct */
+    (unaryfunc) 0,                            /* nb_hex */
+#endif
+    (binaryfunc) 0,                           /* nb_inplace_add */
+    (binaryfunc) 0,                           /* nb_inplace_subtract */
+    (binaryfunc) 0,                           /* nb_inplace_multiply */
+#if PY_VERSION_HEX < 0x03000000
+    (binaryfunc) 0,                           /* nb_inplace_divide */
+#endif
+    (binaryfunc) 0,                           /* nb_inplace_remainder */
+    (ternaryfunc) 0,                          /* nb_inplace_power */
+    (binaryfunc) 0,                           /* nb_inplace_lshift */
+    (binaryfunc) 0,                           /* nb_inplace_rshift */
+    (binaryfunc) 0,                           /* nb_inplace_and */
+    (binaryfunc) 0,                           /* nb_inplace_xor */
+    (binaryfunc) 0,                           /* nb_inplace_or */
+    (binaryfunc) 0,                           /* nb_floor_divide */
+    (binaryfunc) 0,                           /* nb_true_divide */
+    (binaryfunc) 0,                           /* nb_inplace_floor_divide */
+    (binaryfunc) 0,                           /* nb_inplace_true_divide */
+#if PY_VERSION_HEX >= 0x02050000
+    (unaryfunc) 0,                            /* nb_index */
+#endif
+#if PY_VERSION_HEX >= 0x03050000
+    (binaryfunc) 0,                           /* nb_matrix_multiply */
+    (binaryfunc) 0,                           /* nb_inplace_matrix_multiply */
+#endif
+  },
+  {
+    (lenfunc) 0,                              /* mp_length */
+    (binaryfunc) 0,                           /* mp_subscript */
+    (objobjargproc) 0,                        /* mp_ass_subscript */
+  },
+  {
+    (lenfunc) 0,                              /* sq_length */
+    (binaryfunc) 0,                           /* sq_concat */
+    (ssizeargfunc) 0,                         /* sq_repeat */
+    (ssizeargfunc) 0,                         /* sq_item */
+#if PY_VERSION_HEX >= 0x03000000
+    (void *) 0,                               /* was_sq_slice */
+#else
+    (ssizessizeargfunc) 0,                    /* sq_slice */
+#endif
+    (ssizeobjargproc) 0,                      /* sq_ass_item */
+#if PY_VERSION_HEX >= 0x03000000
+    (void *) 0,                               /* was_sq_ass_slice */
+#else
+    (ssizessizeobjargproc) 0,                 /* sq_ass_slice */
+#endif
+    (objobjproc) 0,                           /* sq_contains */
+    (binaryfunc) 0,                           /* sq_inplace_concat */
+    (ssizeargfunc) 0,                         /* sq_inplace_repeat */
+  },
+  {
+#if PY_VERSION_HEX < 0x03000000
+    (readbufferproc) 0,                       /* bf_getreadbuffer */
+    (writebufferproc) 0,                      /* bf_getwritebuffer */
+    (segcountproc) 0,                         /* bf_getsegcount */
+    (charbufferproc) 0,                       /* bf_getcharbuffer */
+#endif
+#if PY_VERSION_HEX >= 0x02060000
+    (getbufferproc) 0,                        /* bf_getbuffer */
+    (releasebufferproc) 0,                    /* bf_releasebuffer */
+#endif
+  },
+    (PyObject *) 0,                           /* ht_name */
+    (PyObject *) 0,                           /* ht_slots */
+#if PY_VERSION_HEX >= 0x03030000
+    (PyObject *) 0,                           /* ht_qualname */
+    0,                                        /* ht_cached_keys */
+#endif
+};
+
+SWIGINTERN SwigPyClientData SwigPyBuiltin__pirawcam_buff_t_clientdata = {0, 0, 0, 0, 0, 0, (PyTypeObject *)&SwigPyBuiltin__pirawcam_buff_t_type};
+
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
@@ -5641,6 +6471,7 @@ static swig_type_info _swigt__p_SwigPyObject = {"_p_SwigPyObject", "SwigPyObject
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_int = {"_p_int", "intptr_t *|int *|int_least32_t *|int_fast32_t *|int32_t *|int_fast16_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_long_long = {"_p_long_long", "int_least64_t *|int_fast64_t *|int64_t *|long long *|intmax_t *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_pirawcam_buff_t = {"_p_pirawcam_buff_t", "struct pirawcam_buff_t *|pirawcam_buff_t *", 0, 0, (void*)&SwigPyBuiltin__pirawcam_buff_t_clientdata, 0};
 static swig_type_info _swigt__p_rawcam_interface = {"_p_rawcam_interface", "struct rawcam_interface *|rawcam_interface *", 0, 0, (void*)&SwigPyBuiltin__rawcam_interface_clientdata, 0};
 static swig_type_info _swigt__p_short = {"_p_short", "short *|int_least16_t *|int16_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_signed_char = {"_p_signed_char", "signed char *|int_least8_t *|int_fast8_t *|int8_t *", 0, 0, (void*)0, 0};
@@ -5657,6 +6488,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_char,
   &_swigt__p_int,
   &_swigt__p_long_long,
+  &_swigt__p_pirawcam_buff_t,
   &_swigt__p_rawcam_interface,
   &_swigt__p_short,
   &_swigt__p_signed_char,
@@ -5673,6 +6505,7 @@ static swig_cast_info _swigc__p_SwigPyObject[] = {  {&_swigt__p_SwigPyObject, 0,
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_int[] = {  {&_swigt__p_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_long_long[] = {  {&_swigt__p_long_long, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_pirawcam_buff_t[] = {  {&_swigt__p_pirawcam_buff_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_rawcam_interface[] = {  {&_swigt__p_rawcam_interface, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_short[] = {  {&_swigt__p_short, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_signed_char[] = {  {&_swigt__p_signed_char, 0, 0, 0},{0, 0, 0, 0}};
@@ -5689,6 +6522,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_char,
   _swigc__p_int,
   _swigc__p_long_long,
+  _swigc__p_pirawcam_buff_t,
   _swigc__p_rawcam_interface,
   _swigc__p_short,
   _swigc__p_signed_char,
@@ -6410,6 +7244,29 @@ SWIG_init(void) {
   Py_INCREF(builtin_pytype);
   PyModule_AddObject(m, "interface", (PyObject *)builtin_pytype);
   SwigPyBuiltin_AddPublicSymbol(public_interface, "interface");
+  d = md;
+  
+  /* type '::pirawcam_buff_t' */
+  builtin_pytype = (PyTypeObject *)&SwigPyBuiltin__pirawcam_buff_t_type;
+  builtin_pytype->tp_dict = d = PyDict_New();
+  SwigPyBuiltin_SetMetaType(builtin_pytype, metatype);
+  builtin_pytype->tp_new = PyType_GenericNew;
+  builtin_base_count = 0;
+  builtin_bases[builtin_base_count] = NULL;
+  SwigPyBuiltin_InitBases(builtin_pytype, builtin_bases);
+  PyDict_SetItemString(d, "this", this_descr);
+  PyDict_SetItemString(d, "thisown", thisown_descr);
+  if (PyType_Ready(builtin_pytype) < 0) {
+    PyErr_SetString(PyExc_TypeError, "Could not create type 'pirawcam_buff_t'.");
+#if PY_VERSION_HEX >= 0x03000000
+    return NULL;
+#else
+    return;
+#endif
+  }
+  Py_INCREF(builtin_pytype);
+  PyModule_AddObject(m, "pirawcam_buff_t", (PyObject *)builtin_pytype);
+  SwigPyBuiltin_AddPublicSymbol(public_interface, "pirawcam_buff_t");
   d = md;
 #if PY_VERSION_HEX >= 0x03000000
   return m;
